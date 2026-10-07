@@ -1,0 +1,137 @@
+.ai-widget-container {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.ai-toggle-btn {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: var(--gold-primary);
+  color: #000;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+  transition: 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ai-toggle-btn:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.ai-chat-window {
+  width: 380px;
+  height: 500px;
+  background: var(--bg-panel);
+  border: 1px solid var(--gold-dim);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.ai-header {
+  background: var(--bg-panel-lighter);
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #333;
+}
+
+.ai-header span {
+  color: var(--gold-primary);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.ai-messages {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.ai-msg {
+  max-width: 85%;
+  padding: 12px 15px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.ai-msg-bot {
+  align-self: flex-start;
+  background: var(--bg-panel-lighter);
+  color: #fff;
+  border-radius: 15px 15px 15px 0;
+  border-left: 3px solid var(--gold-primary);
+}
+
+.ai-msg-user {
+  align-self: flex-end;
+  background: var(--gold-dim);
+  color: #fff;
+  border-radius: 15px 15px 0 15px;
+}
+
+.ai-input-area {
+  padding: 15px;
+  border-top: 1px solid #333;
+  display: flex;
+  gap: 10px;
+  background: var(--bg-panel-lighter);
+}
+
+.ai-input-area input {
+  flex-grow: 1;
+  background: var(--bg-dark);
+  border: 1px solid #333;
+  padding: 10px 15px;
+  border-radius: 20px;
+  color: #fff;
+  outline: none;
+  font-size: 0.85rem;
+}
+
+.ai-input-area input:focus {
+  border-color: var(--gold-primary);
+}
+
+.send-btn {
+  background: var(--gold-primary);
+  color: #000;
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.send-btn:hover {
+  background: var(--gold-light);
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,3325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JOB MATCH | Management System</title>
+    
+    <!-- Google Fonts for Luxury Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- jsPDF and html2canvas for Resume Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            /* Luxury Palette */
+            --bg-dark: #050505;
+            --bg-panel: #121212;
+            --bg-panel-lighter: #1e1e1e;
+            
+            --gold-primary: #D4AF37;
+            --gold-light: #F3E5AB;
+            --gold-dim: #8a7126;
+            
+            --text-main: #f0f0f0;
+            --text-muted: #a0a0a0;
+            
+            --danger: #8b0000;
+            --success: #1b5e20;
+            --info: #0d47a1;
+
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+            --gold-glow: 0 0 10px rgba(212, 175, 55, 0.3);
+            
+            --font-heading: 'Cinzel', serif;
+            --font-body: 'Lato', sans-serif;
+            
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3, h4 {
+            font-family: var(--font-heading);
+            color: var(--gold-primary);
+            letter-spacing: 1px;
+        }
+
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+        
+        /* --- UTILITIES --- */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-10 { gap: 10px; }
+        .gap-20 { gap: 20px; }
+        
+        .btn {
+            padding: 10px 20px;
+            border: 1px solid var(--gold-primary);
+            background: transparent;
+            color: var(--gold-primary);
+            font-family: var(--font-body);
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            background: var(--gold-primary);
+            color: var(--bg-dark);
+            box-shadow: var(--gold-glow);
+        }
+
+        .btn-filled {
+            background: linear-gradient(135deg, var(--gold-dim), var(--gold-primary));
+            color: var(--bg-dark);
+            border: none;
+        }
+        
+        .btn-filled:hover {
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-light));
+            color: var(--bg-dark);
+            box-shadow: var(--gold-glow);
+        }
+
+        .btn-danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        .btn-danger:hover { background: var(--danger); color: rgb(156, 142, 142); box-shadow: 0 0 10px rgba(139,0,0,0.5); }
+
+        /* --- LOGIN SCREEN --- */
+        #login-view {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+            position: relative;
+            z-index: 10;
+        }
+
+        .login-card {
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border: 1px solid var(--gold-dim);
+            border-radius: 4px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .brand-logo {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--gold-primary);
+        }
+
+        .role-selector {
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .role-card {
+            background: var(--bg-panel-lighter);
+            border: 1px solid #333;
+            padding: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .role-card:hover, .role-card.active {
+            border-color: var(--gold-primary);
+            background: rgba(212, 175, 55, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .role-card i { font-size: 2.5rem; color: var(--gold-primary); }
+
+        .role-card span {
+            font-size: 1.2rem;
+        }
+
+        .login-form {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .input-group {
+            position: relative;
+            text-align: left;
+        }
+        
+        .input-group label {
+            font-size: 0.8rem;
+            color: var(--gold-primary);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .lux-input {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid #333;
+            color: #d1caca;
+            font-family: var(--font-body);
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .lux-input:focus {
+            border-color: var(--gold-primary);
+        }
+
+        /* --- DASHBOARD LAYOUT --- */
+        #dashboard-view {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-panel);
+            border-right: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            z-index: 5;
+        }
+
+        .sidebar-header {
+            margin-bottom: 40px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 4px;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+            border-left: 2px solid transparent;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(212, 175, 55, 0.05);
+            color: var(--gold-primary);
+            border-left-color: var(--gold-primary);
+        }
+
+        .user-profile {
+            padding: 20px;
+            border-top: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--gold-dim);
+            object-fit: cover;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            background: var(--bg-dark);
+            overflow-y: auto;
+            position: relative;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .top-bar {
+            position: sticky;
+            top: 0;
+            background: rgba(5, 5, 5, 0.9);
+            backdrop-filter: blur(5px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #222;
+            z-index: 4;
+        }
+
+        .page-content {
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* --- CARDS & TABLES --- */
+        .card {
+            background: var(--bg-panel);
+            border: 1px solid #333;
+            padding: 25px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--gold-dim);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-panel-lighter);
+            padding: 20px;
+            border: 1px solid #333;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-family: var(--font-heading);
+            color: var(--gold-primary);
+            margin: 10px 0;
+        }
+
+        /* Tables */
+        .lux-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .lux-table th {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 2px solid var(--gold-dim);
+            color: var(--gold-primary);
+            font-family: var(--font-heading);
+        }
+
+        .lux-table td {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            color: var(--text-muted);
+        }
+
+        .lux-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+            color: #fff;
+        }
+
+        /* Status Badges */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-pending { background: rgba(212, 175, 55, 0.2); color: var(--gold-primary); border: 1px solid var(--gold-dim); }
+        .badge-accepted { background: rgba(27, 94, 32, 0.2); color: #4caf50; border: 1px solid #2e7d32; }
+        .badge-rejected { background: rgba(139, 0, 0, 0.2); color: #ef5350; border: 1px solid #c62828; }
+
+        /* --- TOAST NOTIFICATIONS --- */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: var(--bg-panel-lighter);
+            color: #fff;
+            padding: 15px 25px;
+            border-left: 4px solid var(--gold-primary);
+            box-shadow: var(--shadow);
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- MODAL --- */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: var(--bg-panel);
+            border: 1px solid var(--gold-dim);
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 4px;
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px; right: 15px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        .close-modal:hover { color: var(--danger); }
+
+        /* --- RESPONSIVE --- */
+        /* --- NOTIFICATION DROPDOWN --- */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border: 2px solid var(--bg-dark);
+        }
+
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-list {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .notification-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notification-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .notification-item.unread {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .notification-icon {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .notification-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .notification-footer {
+            text-align: center;
+            padding: 10px;
+            border-top: 1px solid #444;
+        }
+        @media (max-width: 768px) {
+            #dashboard-view { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; padding: 10px; flex-direction: row; justify-content: space-between; align-items: center; }
+            .nav-menu { display: none; /* Simplified for mobile demo */ }
+            .user-profile { border: none; padding: 0; }
+            .user-details { display: none; }
+            .main-content { margin-bottom: 60px; } /* Space for bottom nav if added */
+        }
+
+        /* --- AI WIDGET --- */
+        #ai-widget-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1500;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        #ai-toggle-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gold-primary);
+            color: #000;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #ai-toggle-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #ai-chat-window {
+            width: 350px;
+            height: 450px;
+            background: var(--bg-panel);
+            border: 1px solid var(--gold-dim);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.3s ease;
+        }
+
+        .ai-header {
+            background: var(--bg-panel-lighter);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            color: var(--gold-primary);
+            font-weight: bold;
+        }
+
+        .ai-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ai-msg-bot {
+            align-self: flex-start;
+            background: var(--bg-panel-lighter);
+            padding: 10px 15px;
+            border-radius: 10px 10px 10px 0;
+            max-width: 80%;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
+        .ai-msg-user {
+            align-self: flex-end;
+            background: var(--gold-dim);
+            padding: 10px 15px;
+            border-radius: 10px 10px 0 10px;
+            max-width: 80%;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
+        .ai-input-area {
+            padding: 15px;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .ai-input-area input {
+            flex-grow: 1;
+            background: var(--bg-dark);
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 20px;
+            color: #fff;
+            outline: none;
+        }
+
+        .ai-input-area i {
+            color: var(--gold-primary);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container"></div>
+
+    <!-- AI ASSISTANT WIDGET -->
+    <div id="ai-widget-container">
+        <div id="ai-chat-window" class="hidden">
+            <div class="ai-header">
+                <span><i class="fa-solid fa-robot"></i> LuxeAI Assistant</span>
+                <i class="fa-solid fa-xmark" style="cursor: pointer;" onclick="toggleAiChat()"></i>
+            </div>
+            <div id="ai-messages" class="ai-messages">
+                <div class="ai-msg-bot">Hello! I am LuxeAI. How can I assist you today?</div>
+            </div>
+            <div class="ai-input-area">
+                <input type="text" id="ai-user-input" placeholder="Ask me anything..." onkeypress="handleAiInput(event)">
+                <i class="fa-solid fa-paper-plane" onclick="sendAiMessage()"></i>
+            </div>
+        </div>
+        <button id="ai-toggle-btn" onclick="toggleAiChat()">
+            <i class="fa-solid fa-robot"></i>
+        </button>
+    </div>
+
+    <!-- APPLICATION MODAL -->
+    <div id="application-modal" class="modal hidden">
+        <div class="modal-content">
+            <i class="fa-solid fa-xmark close-modal" onclick="closeModal()"></i>
+            <h3 style="margin-bottom: 5px;">Apply for Position</h3>
+            <p style="color: var(--gold-primary); margin-bottom: 20px;">
+                <span id="modal-job-title">Job Title</span> at <span id="modal-company">Company</span>
+            </p>
+            
+            <form id="application-form" onsubmit="submitApplication(event)">
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>Full Name</label>
+                    <input type="text" id="app-name" class="lux-input" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>Email Address</label>
+                    <input type="email" id="app-email" class="lux-input" placeholder="your.email@example.com" required>
+                </div>
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>Cover Letter</label>
+                    <textarea id="app-cover" class="lux-input" rows="4" placeholder="Why are you a good fit?" required></textarea>
+                </div>
+                <div class="input-group" style="margin-bottom: 20px;">
+                    <label>Resume</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="file" class="lux-input" style="padding: 8px;">
+                    </div>
+                    <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">Leave empty to use profile resume.</p>
+                </div>
+                
+                <div class="flex gap-10">
+                    <button type="button" class="btn btn-danger" style="flex: 1;" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-filled" style="flex: 1;">Submit Application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCHEDULE INTERVIEW MODAL -->
+    <div id="schedule-modal" class="modal hidden">
+        <div class="modal-content">
+            <i class="fa-solid fa-xmark close-modal" onclick="closeScheduleModal()"></i>
+            <h3 style="margin-bottom: 20px;">Schedule Interview</h3>
+            <form onsubmit="event.preventDefault(); handleScheduleSubmit()">
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>Candidate Name</label>
+                    <input type="text" id="sched-name" class="lux-input" required placeholder="e.g. Alice Walker">
+                </div>
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>Position</label>
+                    <input type="text" id="sched-pos" class="lux-input" required placeholder="e.g. Software Engineer">
+                </div>
+                <div class="flex gap-20" style="margin-bottom: 20px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label>Date</label>
+                        <input type="date" id="sched-date" class="lux-input" required>
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>Time</label>
+                        <input type="time" id="sched-time" class="lux-input" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-filled" style="width: 100%;">Confirm Schedule</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- VIEW STUDENT PROFILE MODAL -->
+    <div id="student-profile-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 700px;">
+            <i class="fa-solid fa-xmark close-modal" onclick="closeStudentProfileModal()"></i>
+            <div id="student-profile-content">
+                <!-- Profile content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. LOGIN VIEW -->
+    <section id="login-view">
+        <div class="login-card">
+            <h1 class="brand-logo">JOB MATCH</h1>
+            <p style="color: var(--text-muted); font-style: italic;">Elite Career Management</p>
+            
+            <div class="role-selector">
+                <div class="role-card" onclick="selectRole('student', this)">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>Student</span>
+                </div>
+                <div class="role-card" onclick="selectRole('admin', this)">
+                    <i class="fa-solid fa-user-tie"></i>
+                    <span>Admin</span>
+                </div>
+                <div class="role-card" onclick="selectRole('company', this)">
+                    <i class="fa-solid fa-building"></i>
+                    <span>Company</span>
+                </div>
+            </div>
+
+            <div id="login-form-container" class="login-form hidden">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="username" class="lux-input" placeholder="Enter ID">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" class="lux-input" placeholder="••••••••">
+                </div>
+                <button class="btn btn-filled" style="width: 100%;" onclick="handleLogin()">Enter System</button>
+                <button class="btn" style="width: 100%; margin-top: 5px; border: none; font-size: 0.75rem;" onclick="resetLogin()">Back to Role Selection</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. DASHBOARD VIEW -->
+    <section id="dashboard-view" class="hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2 style="font-size: 1.2rem; color: var(--gold-primary);">JOB MATCH</h2>
+            </div>
+            
+            <nav class="nav-menu" id="sidebar-nav">
+                <!-- Nav items injected by JS based on role -->
+            </nav>
+
+            <div class="user-profile">
+                <img src="https://picsum.photos/seed/luxe/100/100" alt="User" class="avatar" onclick="goToProfile()" style="cursor: pointer;">
+                <div class="user-details">
+                    <h4 id="user-name-display" style="font-size: 0.9rem; color: #fff;">User Name</h4>
+                    <span id="user-role-display" style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase;">Role</span>
+                </div>
+                <i class="fa-solid fa-right-from-bracket" style="margin-left: auto; cursor: pointer; color: var(--text-muted);" onclick="logout()"></i>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <h3 id="page-title">Dashboard</h3>
+                <div style="display: flex; gap: 20px; align-items: center;">
+                    <div class="notification-wrapper" style="position: relative;">
+                        <i class="fa-regular fa-bell" style="color: var(--gold-primary); cursor: pointer; font-size: 1.1rem;" onclick="toggleNotifications()"></i>
+                        <span id="notification-badge" class="notification-badge hidden"></span>
+                        <div id="notification-panel" class="card hidden" style="position: absolute; top: 150%; right: 0; width: 380px; z-index: 100; padding: 0; max-height: 450px; display: flex; flex-direction: column;">
+                            <!-- Notifications will be injected here -->
+                        </div>
+                    </div>
+                    <i class="fa-regular fa-envelope" style="color: var(--gold-primary); cursor: pointer; font-size: 1.1rem;"></i>
+                </div>
+            </div>
+
+            <div id="content-area" class="page-content">
+                <!-- Dynamic Content Injected Here -->
+            </div>
+        </main>
+    </section>
+
+    <script>
+        // --- DATA & STATE ---
+        const API_URL = 'http://localhost:3000/api';
+
+        const state = {
+            currentUser: null,
+            selectedRole: null,
+            jobs: [],
+            applications: [],
+            studentProfile: {
+                branch: "",
+                year: "",
+                cgpa: "",
+                resume: null
+            },
+            reviews: [],
+            offers: [],
+            candidates: [],
+            interviews: [],
+            companies: [],
+            notifications: []
+        };
+        
+        // --- DB HELPERS ---
+        async function fetchState() {
+            try {
+                const response = await fetch(`${API_URL}/state`);
+                const data = await response.json();
+                Object.keys(data).forEach(key => { if (key !== 'currentUser') state[key] = data[key]; });
+            } catch (error) {
+                console.error('DB fetch failed:', error);
+                showToast("Database server offline. Using session memory.", "error");
+            }
+        }
+
+        async function saveState() {
+            try {
+                await fetch(`${API_URL}/state`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(state)
+                });
+            } catch (error) {
+                console.error('DB save failed:', error);
+            }
+        }
+
+        // Close notification panel if clicked outside
+        window.addEventListener('click', function(e) {
+            const panel = document.getElementById('notification-panel');
+            if (panel && !panel.contains(e.target) && !e.target.closest('.notification-wrapper')) {
+                panel.classList.add('hidden');
+            }
+        });
+        const interviewQuestions = {
+            behavioral: [
+                "Tell me about yourself.",
+                "What are your biggest strengths and weaknesses?",
+                "Describe a challenging situation you faced at work and how you handled it.",
+                "Where do you see yourself in 5 years?",
+                "Why are you interested in this role?",
+                "Tell me about a time you worked successfully as part of a team.",
+                "How do you handle pressure or stressful situations?"
+            ],
+            technical: [
+                "Explain the difference between `let`, `const`, and `var` in JavaScript.",
+                "What is the box model in CSS?",
+                "Describe the concept of polymorphism in object-oriented programming.",
+                "What is a RESTful API?",
+                "Explain the difference between SQL and NoSQL databases.",
+                "What is the purpose of a `finally` block in a try-catch statement?",
+                "What are Promises in JavaScript and why are they useful?"
+            ]
+        };
+        let currentQuestionIndex = 0;
+        let currentInterviewType = '';
+        let currentConversation = [];
+        // --- AUTH FUNCTIONS ---
+        
+        function selectRole(role, element) {
+            state.selectedRole = role;
+            
+            // UI Update
+            document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+            
+            // Show form
+            document.getElementById('login-form-container').classList.remove('hidden');
+            document.getElementById('username').focus();
+            
+            // Set default username hint
+            document.getElementById('username').value = role === 'admin' ? 'admin_officer' : (role === 'company' ? 'company_rep' : 'student_user');
+        }
+
+        function resetLogin() {
+            state.selectedRole = null;
+            document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+            document.getElementById('login-form-container').classList.add('hidden');
+        }
+
+        async function handleLogin() {
+            const username = document.getElementById('username').value;
+            if(!username) {
+                showToast("Please enter a username", "error");
+                return;
+            }
+
+            // Simulate Login
+            state.currentUser = {
+                name: username,
+                role: state.selectedRole
+            };
+
+            // Connect to DB and pull latest data
+            await fetchState();
+
+            // Transition
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('dashboard-view').classList.remove('hidden');
+            
+            // Init Dashboard
+            initDashboard();
+            showToast(`Welcome back, ${state.currentUser.name}. Database connected.`, "success");
+        }
+
+        function logout() {
+            state.currentUser = null;
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+            resetLogin();
+            showToast("Logged out successfully", "info");
+        }
+
+        // --- DASHBOARD LOGIC ---
+
+        function initDashboard() {
+            const user = state.currentUser;
+            
+            // Set User Profile Info
+            document.getElementById('user-name-display').innerText = user.name;
+            document.getElementById('user-role-display').innerText = user.role;
+
+            // Build Sidebar based on Role
+            const nav = document.getElementById('sidebar-nav');
+            nav.innerHTML = ''; // Clear existing
+
+            let menuItems = [];
+
+            if (user.role === 'student') {
+                menuItems = [
+                    { id: 'dash', label: 'Overview', icon: 'fa-chart-pie' },
+                    { id: 'jobs', label: 'Available Jobs', icon: 'fa-briefcase' },
+                    { id: 'my-apps', label: 'My Applications', icon: 'fa-file-contract' },
+                    { id: 'reviews', label: 'Company Reviews', icon: 'fa-star' },
+                    { id: 'ai-matching', label: 'AI Job Matching', icon: 'fa-robot' },
+                    { id: 'interview-prep', label: 'Interview Prep Hub', icon: 'fa-book-open' },
+                    { id: 'resume-builder', label: 'Resume Builder', icon: 'fa-file-word' },
+                    { id: 'offer-management', label: 'Offer Management', icon: 'fa-sack-dollar' },
+                    { id: 'video-interviews', label: 'Video Interviews', icon: 'fa-video' }
+                ];
+            } else if (user.role === 'admin') {
+                menuItems = [
+                    { id: 'dash', label: 'Overview', icon: 'fa-chart-line' },
+                    { id: 'post-job', label: 'Post New Job', icon: 'fa-plus-circle' },
+                    { id: 'manage-apps', label: 'Manage Applications', icon: 'fa-users-gear' },
+                    { id: 'companies', label: 'Registered Companies', icon: 'fa-building' },
+                    { id: 'technologies', label: 'New Technologies', icon: 'fa-microchip' }
+                ];
+            } else if (user.role === 'company') {
+                menuItems = [
+                    { id: 'dash', label: 'Company Dashboard', icon: 'fa-building' },
+                    { id: 'applicants', label: 'Applicants', icon: 'fa-user-plus' },
+                    { id: 'smart-search', label: 'Smart Candidate Search', icon: 'fa-magnifying-glass' },
+                    { id: 'company-scheduler', label: 'Interview Scheduler', icon: 'fa-calendar-days' },
+                    { id: 'offer-generator', label: 'Offer Letter Generator', icon: 'fa-file-signature' }
+                ];
+            }
+
+            menuItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `nav-item ${index === 0 ? 'active' : ''}`;
+                div.id = `nav-item-${item.id}`;
+                div.innerHTML = `<i class="fa-solid ${item.icon}"></i> <span>${item.label}</span>`;
+                div.onclick = () => switchTab(item.id, div);
+                nav.appendChild(div);
+            });
+
+            // Load first tab
+            loadContent(menuItems[0].id);
+            updateNotificationBadge();
+        }
+
+        function switchTab(tabId, navElement) {
+            // Update Nav UI
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            navElement.classList.add('active');
+
+            loadContent(tabId);
+        }
+
+        function goToProfile() {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            loadContent('profile');
+        }
+
+        function loadContent(tabId) {
+            const contentArea = document.getElementById('content-area');
+            const pageTitle = document.getElementById('page-title');
+            contentArea.innerHTML = ''; // Clear current content
+            contentArea.style.opacity = 0; // For fade effect
+
+            setTimeout(() => {
+                contentArea.style.transition = 'opacity 0.4s ease';
+                contentArea.style.opacity = 1;
+
+                if (tabId === 'dash') renderDashboardHome(contentArea, pageTitle);
+                else if (tabId === 'profile') renderStudentProfile(contentArea, pageTitle);
+                else if (tabId === 'jobs') renderJobsList(contentArea, pageTitle);
+                else if (tabId === 'my-apps') renderMyApplications(contentArea, pageTitle);
+                else if (tabId === 'post-job') renderPostJob(contentArea, pageTitle);
+                else if (tabId === 'manage-apps') renderAdminApps(contentArea, pageTitle);
+                else if (tabId === 'applicants') renderCompanyApplicants(contentArea, pageTitle);
+                else if (tabId === 'companies') renderCompanies(contentArea, pageTitle);
+                else if (tabId === 'technologies') renderTechnologies(contentArea, pageTitle);
+                else if (tabId === 'reviews') renderCompanyReviews(contentArea, pageTitle);
+                else if (tabId === 'ai-matching') renderAiMatching(contentArea, pageTitle);
+                else if (tabId === 'interview-prep') renderInterviewPrep(contentArea, pageTitle);
+                else if (tabId === 'resume-builder') renderResumeBuilder(contentArea, pageTitle);
+                else if (tabId === 'offer-management') renderOfferManagement(contentArea, pageTitle);
+                else if (tabId === 'video-interviews') renderVideoInterview(contentArea, pageTitle);
+                else if (tabId === 'smart-search') renderSmartSearch(contentArea, pageTitle);
+                else if (tabId === 'company-scheduler') renderCompanyInterviewScheduler(contentArea, pageTitle);
+                else if (tabId === 'offer-generator') renderOfferGenerator(contentArea, pageTitle);
+
+            }, 50);
+        }
+
+        // --- RENDER FUNCTIONS (VIEWS) ---
+
+        // 1. Generic Dashboard Overview
+        function renderDashboardHome(container, title) {
+            title.innerText = "Dashboard Overview";
+            
+            let statsHTML = '';
+            const role = state.currentUser.role;
+
+            if (role === 'student') {
+                statsHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">3</div>
+                        <p>Jobs Applied</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">1</div>
+                        <p>Interviews Scheduled</p>
+                    </div>
+                `;
+            } else if (role === 'admin') {
+                statsHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">${state.jobs.length}</div>
+                        <p>Active Listings</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${state.applications.length}</div>
+                        <p>Total Applications</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${state.companies.length}</div>
+                        <p>Companies</p>
+                    </div>
+                `;
+            } else if (role === 'company') {
+                statsHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">2</div>
+                        <p>Active Jobs</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">14</div>
+                        <p>Resumes Received</p>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="stats-grid">${statsHTML}</div>
+                <div class="card">
+                    <h3><i class="fa-solid fa-circle-info" style="margin-right:10px;"></i> About JOB MATCH</h3>
+                    <p style="color:var(--text-muted); margin-top:10px; line-height:1.6;">
+                        JOB MATCH is the premier career management system designed to bridge the gap between elite talent and top-tier organizations. 
+                        Our platform leverages AI-driven matching, seamless interview scheduling, and comprehensive profile management to ensure the perfect fit for every role.
+                    </p>
+                </div>
+                <div class="card">
+                    <h3><i class="fa-solid fa-newspaper" style="margin-right:10px;"></i> Recent Activity</h3>
+                    <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                        <div style="padding: 15px; background: var(--bg-panel-lighter); border-radius: 4px; border-left: 3px solid var(--gold-primary);">
+                            <h5 style="color: #fff; margin-bottom: 5px;">New Job Posted</h5>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">TechNova is hiring for "Senior Developer". Apply now!</p>
+                            <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 5px;">2 hours ago</span>
+                        </div>
+                        <div style="padding: 15px; background: var(--bg-panel-lighter); border-radius: 4px; border-left: 3px solid var(--info);">
+                            <h5 style="color: #fff; margin-bottom: 5px;">System Update</h5>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Platform maintenance scheduled for this Sunday at 2:00 AM.</p>
+                            <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 5px;">Yesterday</span>
+                        </div>
+                        <div style="padding: 15px; background: var(--bg-panel-lighter); border-radius: 4px; border-left: 3px solid var(--success);">
+                            <h5 style="color: #fff; margin-bottom: 5px;">Placement Drive</h5>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Goldman Sachs campus drive results are out. Check your email.</p>
+                            <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 5px;">2 days ago</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 2. Student: Profile
+        function renderStudentProfile(container, title) {
+            title.innerText = "My Student Profile";
+            const p = state.studentProfile;
+            
+            container.innerHTML = `
+                <div class="card" style="max-width: 800px; margin: 0 auto;">
+                    <form onsubmit="event.preventDefault(); handleProfileUpdate();">
+                        <h4 style="margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">Academic Details</h4>
+                        
+                        <div class="flex gap-20" style="margin-bottom:20px;">
+                            <div class="input-group" style="flex:1;">
+                                <label>Branch / Major</label>
+                                <input type="text" id="profBranch" class="lux-input" value="${p.branch}" placeholder="e.g. Computer Science">
+                            </div>
+                            <div class="input-group" style="flex:1;">
+                                <label>Current Year</label>
+                                <select id="profYear" class="lux-input">
+                                    <option value="" disabled ${!p.year ? 'selected' : ''}>Select Year</option>
+                                    <option value="1" ${p.year === '1' ? 'selected' : ''}>1st Year</option>
+                                    <option value="2" ${p.year === '2' ? 'selected' : ''}>2nd Year</option>
+                                    <option value="3" ${p.year === '3' ? 'selected' : ''}>3rd Year</option>
+                                    <option value="4" ${p.year === '4' ? 'selected' : ''}>4th Year</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group" style="margin-bottom:20px;">
+                            <label>CGPA (Cumulative)</label>
+                            <input type="number" step="0.01" min="0" max="10" id="profCGPA" class="lux-input" value="${p.cgpa}" placeholder="e.g. 8.5">
+                        </div>
+
+                        <h4 style="margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 30px;">Documents</h4>
+                        
+                        <div class="input-group" style="margin-bottom:20px;">
+                            <label>Resume (PDF)</label>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <input type="file" id="profResume" class="lux-input" accept="application/pdf" style="padding: 8px;">
+                                ${p.resume ? `<span style="color:var(--success); font-size:0.8rem;"><i class="fa-solid fa-check"></i> ${p.resume} uploaded</span>` : ''}
+                            </div>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:5px;">Max file size: 5MB. PDF only.</p>
+                        </div>
+
+                        <button type="submit" class="btn btn-filled" style="width:100%;">Save Profile</button>
+                    </form>
+                </div>
+            `;
+        }
+
+        // 3. Student: Jobs List
+        function renderJobsList(container, title) {
+            title.innerText = "Available Opportunities";
+            
+            let jobsHTML = state.jobs.map(job => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
+                    <div>
+                        <h3 style="color:#fff;">${job.title}</h3>
+                        <p style="color:var(--gold-primary); margin-bottom:5px;">${job.company}</p>
+                        <div style="display:flex; gap:15px; font-size:0.85rem; color:var(--text-muted);">
+                            <span><i class="fa-solid fa-money-bill"></i> ${job.salary}</span>
+                            <span><i class="fa-solid fa-clock"></i> ${job.type}</span>
+                            <span><i class="fa-regular fa-calendar"></i> ${job.posted}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-filled" onclick="openApplicationModal(${job.id})">Apply Now</button>
+                </div>
+            `).join('');
+
+            container.innerHTML = jobsHTML;
+        }
+
+        // 3. Student: My Applications
+        function renderMyApplications(container, title) {
+            title.innerText = "My Application Status";
+            
+            // Filter mock data for current student (simulation)
+            const myApps = state.applications; // showing all for demo purposes
+
+            let rows = myApps.map(app => {
+                const job = state.jobs.find(j => j.id === app.jobId) || { company: 'Unknown', title: 'Unknown' };
+                let badgeClass = app.status === 'Pending' ? 'badge-pending' : (app.status === 'Accepted' ? 'badge-accepted' : 'badge-rejected');
+                
+                return `
+                <tr>
+                    <td>${job.title}</td>
+                    <td>${job.company}</td>
+                    <td>${app.date}</td>
+                    <td><span class="badge ${badgeClass}">${app.status}</span></td>
+                    <td><button class="btn" style="padding:5px 10px; font-size:0.7rem;" onclick="viewApplication(${app.id})">View</button></td>
+                </tr>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="card">
+                    <table class="lux-table">
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Company</th>
+                                <th>Applied Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows.length ? rows : '<tr><td colspan="5" style="text-align:center;">No applications found</td></tr>'}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 4. Admin/Company: Post Job
+        function renderPostJob(container, title) {
+            title.innerText = "Post New Position";
+            
+            container.innerHTML = `
+                <div class="card" style="max-width: 800px; margin: 0 auto;">
+                    <form id="post-job-form" onsubmit="event.preventDefault(); handlePostJob();">
+                        <div class="input-group" style="margin-bottom:20px;">
+                            <label>Job Title</label>
+                            <input type="text" id="jobTitle" class="lux-input" placeholder="e.g. Senior Developer">
+                        </div>
+                        <div class="flex gap-20" style="margin-bottom:20px;">
+                            <div class="input-group" style="flex:1;">
+                                <label>Company Name</label>
+                                <input type="text" id="jobCompany" class="lux-input" placeholder="e.g. TechNova">
+                            </div>
+                            <div class="input-group" style="flex:1;">
+                                <label>Salary Range</label>
+                                <input type="text" id="jobSalary" class="lux-input" placeholder="e.g. $90k - $120k">
+                            </div>
+                        </div>
+                        <div class="input-group" style="margin-bottom:20px;">
+                            <label>Job Type</label>
+                            <select id="jobType" class="lux-input">
+                                <option>Full-time</option>
+                                <option>Part-time</option>
+                                <option>Internship</option>
+                                <option>Contract</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="margin-bottom:20px;">
+                            <label>Description</label>
+                            <textarea id="jobDesc" class="lux-input" rows="4" placeholder="Job description..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-filled" style="width:100%;">Publish Position</button>
+                    </form>
+                </div>
+            `;
+        }
+
+        // 5. Admin: Manage Applications
+        function renderAdminApps(container, title) {
+            title.innerText = "All Student Applications";
+
+            let rows = state.applications.map(app => {
+                const job = state.jobs.find(j => j.id === app.jobId) || { title: 'Unknown' };
+                return `
+                <tr>
+                    <td>${app.studentName}</td>
+                    <td>${job.title}</td>
+                    <td><span class="badge badge-pending">${app.status}</span></td>
+                    <td>
+                        <button class="btn btn-filled" style="padding:5px 10px; font-size:0.7rem; margin-right:5px;" onclick="updateAppStatus(${app.id}, 'Accepted')"><i class="fa-solid fa-check"></i></button>
+                        <button class="btn btn-danger" style="padding:5px 10px; font-size:0.7rem;" onclick="updateAppStatus(${app.id}, 'Rejected')"><i class="fa-solid fa-xmark"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="card">
+                    <table class="lux-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Job Applied</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 7. Company: Applicants
+        function renderCompanyApplicants(container, title) {
+            title.innerText = "Recent Applicants";
+            
+            // Simulate filtering for the logged-in company (assuming TechNova for demo)
+            const companyName = "TechNova"; 
+            const companyJobs = state.jobs.filter(j => j.company === companyName).map(j => j.id);
+            const companyApps = state.applications.filter(a => companyJobs.includes(a.jobId));
+            let rows = companyApps.map(app => {
+                const job = state.jobs.find(j => j.id === app.jobId) || { title: 'Unknown' };
+                const candidate = state.candidates.find(c => c.name === app.studentName);
+                const candidateId = candidate ? candidate.id : null;
+
+                return `
+                <tr>
+                    <td>${candidateId ? `<a href="#" onclick="event.preventDefault(); openStudentProfileModal(${candidateId})" style="color: var(--gold-light); text-decoration: underline;">${app.studentName}</a>` : app.studentName}</td>
+                    <td>${job.title}</td>
+                    <td><span class="badge badge-pending">${app.status}</span></td>
+                    <td>
+                        ${candidateId ? `<button class="btn" style="padding:5px 10px; font-size:0.7rem; margin-right:5px;" onclick="openStudentProfileModal(${candidateId})">View Profile</button>` : ''}
+                        <button class="btn btn-filled" style="padding:5px 10px; font-size:0.7rem; margin-right:5px;" onclick="updateAppStatus(${app.id}, 'Accepted')">Accept</button>
+                        <button class="btn btn-danger" style="padding:5px 10px; font-size:0.7rem;" onclick="updateAppStatus(${app.id}, 'Rejected')">Reject</button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="card">
+                    <table class="lux-table">
+                        <thead>
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Position</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows.length ? rows : '<tr><td colspan="4" style="text-align:center;">No applicants found for your jobs.</td></tr>'}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 8. Admin: Companies
+        function renderCompanies(container, title) {
+            title.innerText = "Partner Companies";
+            
+            let rows = state.companies.map(comp => {
+                let badge = comp.status === 'Verified' ? 'badge-accepted' : (comp.status === 'Pending' ? 'badge-pending' : 'badge-rejected');
+                return `
+                    <tr>
+                        <td>${comp.name}</td>
+                        <td>${comp.industry}</td>
+                        <td>${comp.jobs}</td>
+                        <td><span class="badge ${badge}">${comp.status}</span></td>
+                        <td>
+                            ${comp.status !== 'Verified' ? `<button class="btn btn-filled" style="padding:5px 10px; font-size:0.7rem; margin-right:5px;" onclick="toggleCompanyStatus(${comp.id}, 'Verified')">Verify</button>` : ''}
+                            ${comp.status !== 'Suspended' ? `<button class="btn btn-danger" style="padding:5px 10px; font-size:0.7rem;" onclick="toggleCompanyStatus(${comp.id}, 'Suspended')">Suspend</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="card">
+                    <table class="lux-table">
+                        <thead>
+                            <tr>
+                                <th>Company Name</th>
+                                <th>Industry</th>
+                                <th>Jobs Posted</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function toggleCompanyStatus(id, status) {
+            const comp = state.companies.find(c => c.id === id);
+            if (comp) {
+                comp.status = status;
+                showToast(`${comp.name} marked as ${status}`, 'success');
+                loadContent('companies');
+            }
+        }
+
+        // 9. Student: Company Reviews
+        function renderCompanyReviews(container, title) {
+            title.innerText = "Company Reviews";
+            container.innerHTML = `
+                <div class="card">
+                    <h3><i class="fa-solid fa-star" style="margin-right:10px;"></i>Browse Reviews</h3>
+                    <p style="color:var(--text-muted); margin-top:10px; line-height:1.6;">
+                        Read reviews from fellow students to learn about company culture, interview processes, and more.
+                    </p>
+                </div>
+                <div class="card">
+                    <table class="lux-table">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Overall Rating</th>
+                                <th>Reviews</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>TechNova</td>
+                                <td>
+                                    <i class="fa-solid fa-star" style="color:var(--gold-primary);"></i> 4.5 / 5
+                                </td>
+                                <td>12</td>
+                                <td><button class="btn" style="padding:5px 10px; font-size:0.7rem;" onclick="viewCompanyReviews('TechNova')">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>Goldman Sachs</td>
+                                <td>
+                                    <i class="fa-solid fa-star" style="color:var(--gold-primary);"></i> 4.2 / 5
+                                </td>
+                                <td>8</td>
+                                <td><button class="btn" style="padding:5px 10px; font-size:0.7rem;" onclick="viewCompanyReviews('Goldman Sachs')">View</button></td>
+                            </tr>
+                             <tr>
+                                <td>LuxeCorp</td>
+                                <td>
+                                    <i class="fa-solid fa-star" style="color:var(--gold-primary);"></i> 3.9 / 5
+                                </td>
+                                <td>5</td>
+                                <td><button class="btn" style="padding:5px 10px; font-size:0.7rem;" onclick="viewCompanyReviews('LuxeCorp')">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>CyberSafe</td>
+                                <td>
+                                    <i class="fa-solid fa-star" style="color:var(--gold-primary);"></i> 5.0 / 5
+                                </td>
+                                <td>3</td>
+                                <td><button class="btn" style="padding:5px 10px; font-size:0.7rem;" onclick="viewCompanyReviews('CyberSafe')">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>CreativeMinds</td>
+                                <td>
+                                    <i class="fa-solid fa-star" style="color:var(--gold-primary);"></i> 4.0 / 5
+                                </td>
+                                <td>7</td>
+                                <td><button class="btn" style="padding:5px 10px; font-size:0.7rem;" onclick="viewCompanyReviews('CreativeMinds')">View</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function viewCompanyReviews(companyName) {
+            const contentArea = document.getElementById('content-area');
+            const pageTitle = document.getElementById('page-title');
+            
+            pageTitle.innerText = `Reviews for ${companyName}`;
+
+            const companyReviews = state.reviews.filter(r => r.company === companyName);
+            
+            let reviewsHTML = companyReviews.map(review => `
+                <div class="card">
+                    <div class="flex justify-between items-center">
+                        <h4 style="color: #fff;">${review.title}</h4>
+                        <span style="color: var(--gold-primary); font-size: 1.2rem;">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</span>
+                    </div>
+                    <p style="color: var(--text-muted); margin: 15px 0; line-height: 1.6;">"${review.comment}"</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); text-align: right; font-style: italic;">- ${review.author}</p>
+                </div>
+            `).join('');
+
+            if (companyReviews.length === 0) {
+                reviewsHTML = `<div class="card"><p style="color: var(--text-muted); text-align: center;">No reviews found for ${companyName} yet.</p></div>`;
+            }
+
+            contentArea.innerHTML = `
+                <button class="btn" style="margin-bottom: 20px;" onclick="switchTab('reviews', document.getElementById('nav-item-reviews'))"><i class="fa-solid fa-arrow-left"></i> Back to All Reviews</button>
+                ${reviewsHTML}
+            `;
+        }
+
+        // 10. Student: AI Job Matching
+        function renderAiMatching(container, title) {
+            title.innerText = "AI Job Matching";
+            container.innerHTML = `
+                <div class="card">
+                    <h3><i class="fa-solid fa-robot" style="margin-right:10px;"></i>AI-Powered Job Matching</h3>
+                    <p style="color:var(--text-muted); margin-top:10px; line-height:1.6;">
+                        Let our AI analyze your profile, skills, and resume to find the perfect job opportunities for you.
+                    </p>
+                    <button id="ai-match-btn" class="btn btn-filled" style="margin-top: 15px;" onclick="runAiMatching()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Find My Matches
+                    </button>
+                </div>
+                <div id="ai-matches-result" class="card hidden">
+                    <h4>Your Top Matches</h4>
+                    <p style="color:var(--text-muted); margin-top:10px;">Based on your profile, here are your top 3 recommended jobs:</p>
+                    ${
+                        state.jobs.slice(0, 3).map(job => `
+                            <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; background: var(--bg-panel-lighter); margin-top: 15px;">
+                                <div>
+                                    <h3 style="color:#fff;">${job.title}</h3>
+                                    <p style="color:var(--gold-primary); margin-bottom:5px;">${job.company}</p>
+                                    <div style="display:flex; gap:15px; font-size:0.85rem; color:var(--text-muted);">
+                                        <span><i class="fa-solid fa-star"></i> ${Math.floor(Math.random() * (99 - 85) + 85)}% Match</span>
+                                        <span><i class="fa-solid fa-money-bill"></i> ${job.salary}</span>
+                                        <span><i class="fa-solid fa-clock"></i> ${job.type}</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-filled" onclick="openApplicationModal(${job.id})">Apply Now</button>
+                            </div>
+                        `).join('')
+                    }
+                </div>
+            `;
+        }
+
+        function runAiMatching() {
+            const btn = document.getElementById('ai-match-btn');
+            const results = document.getElementById('ai-matches-result');
+            
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing Profile...';
+            btn.disabled = true;
+            results.classList.add('hidden');
+            
+            showToast('AI is analyzing your profile and resume...', 'info');
+
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Refresh Matches';
+                btn.disabled = false;
+                results.classList.remove('hidden');
+                showToast('Analysis complete! Top matches found.', 'success');
+            }, 2000);
+        }
+
+        // 11. Student: Interview Prep Hub
+        function renderInterviewPrep(container, title) {
+            title.innerText = "Interview Preparation Hub";
+            container.innerHTML = `
+                <div class="card">
+                    <h3><i class="fa-solid fa-book-open" style="margin-right:10px;"></i>Preparation Resources</h3>
+                    <p style="color:var(--text-muted); margin-top:10px; line-height:1.6;">
+                        Sharpen your skills and get ready for your next big interview.
+                    </p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card" style="text-align: left; padding: 25px;">
+                        <h4 style="color: #fff;"><i class="fa-solid fa-file-lines" style="margin-right: 10px; color: var(--gold-primary);"></i>Resume Building</h4>
+                        <p style="margin: 10px 0; color: var(--text-muted);">Get tips and templates for creating a standout resume.</p>
+                        <button class="btn" onclick="renderResumeGuides()">View Guides</button>
+                    </div>
+                    <div class="stat-card" style="text-align: left; padding: 25px;">
+                        <h4 style="color: #fff;"><i class="fa-solid fa-microphone-lines" style="margin-right: 10px; color: var(--gold-primary);"></i>Mock Interviews</h4>
+                        <p style="margin: 10px 0; color: var(--text-muted);">Practice with AI-powered mock interviews and get instant feedback.</p>
+                        <button class="btn btn-filled" onclick="renderMockInterviews()">Start Practice</button>
+                    </div>
+                    <div class="stat-card" style="text-align: left; padding: 25px;">
+                        <h4 style="color: #fff;"><i class="fa-solid fa-code" style="margin-right: 10px; color: var(--gold-primary);"></i>Coding Challenges</h4>
+                        <p style="margin: 10px 0; color: var(--text-muted);">Solve challenges from real companies to test your abilities.</p>
+                        <button class="btn" onclick="renderCodingChallenges()">Go to Challenges</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><i class="fa-solid fa-lightbulb" style="margin-right:10px;"></i>Interview Tips & Tricks</h3>
+                    <ul style="color: var(--text-muted); margin-top: 15px; padding-left: 20px; line-height: 1.8;">
+                        <li><strong>Research the Company:</strong> Understand their mission, products, and recent news.</li>
+                        <li><strong>Prepare Your Questions:</strong> Have thoughtful questions ready to ask the interviewer. It shows you're engaged.</li>
+                        <li><strong>Dress Professionally:</strong> First impressions matter, even for video calls.</li>
+                        <li><strong>Follow Up:</strong> Send a thank-you email within 24 hours of your interview.</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function renderResumeGuides() {
+            const contentArea = document.getElementById('content-area');
+            const pageTitle = document.getElementById('page-title');
+            pageTitle.innerText = "Resume Building Guides";
+
+            contentArea.innerHTML = `
+                <button class="btn" style="margin-bottom: 20px;" onclick="switchTab('interview-prep', document.getElementById('nav-item-interview-prep'))"><i class="fa-solid fa-arrow-left"></i> Back to Hub</button>
+                <div class="card">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles" style="margin-right:10px;"></i>Top Tips for a Winning Resume</h3>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card" style="text-align: left;">
+                        <h4 style="color: #fff;">Use Action Verbs</h4>
+                        <p style="margin: 10px 0; color: var(--text-muted);">Start bullet points with powerful verbs like "Orchestrated", "Engineered", "Accelerated" instead of "Responsible for...".</p>
+                    </div>
+                    <div class="stat-card" style="text-align: left;">
+                        <h4 style="color: #fff;">Quantify Achievements</h4>
+                        <p style="margin: 10px 0; color: var(--text-muted);">Instead of "Improved performance", write "Improved server response time by 15%". Numbers catch the eye.</p>
+                    </div>
+                    <div class="stat-card" style="text-align: left;">
+                        <h4 style="color: #fff;">Tailor to the Job</h4>
+                        <p style="margin: 10px 0; color: var(--text-muted);">Highlight skills and experiences mentioned in the job description. Don't use a one-size-fits-all resume.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <button class="btn btn-filled" onclick="downloadResumeTemplates()"><i class="fa-solid fa-download" style="margin-right: 8px;"></i>Download Template Pack</button>
+                </div>
+            `;
+        }
+
+        function renderMockInterviews() {
+            const contentArea = document.getElementById('content-area');
+            const pageTitle = document.getElementById('page-title');
+            pageTitle.innerText = "AI Mock Interviews";
+
+            contentArea.innerHTML = `
+                <button class="btn" style="margin-bottom: 20px;" onclick="switchTab('interview-prep', document.getElementById('nav-item-interview-prep'))"><i class="fa-solid fa-arrow-left"></i> Back to Hub</button>
+                <div class="card">
+                    <h3><i class="fa-solid fa-microphone-lines" style="margin-right:10px;"></i>Practice Your Interview Skills</h3>
+                    <p style="color:var(--text-muted); margin-top:10px; line-height:1.6;">
+                        Our AI will ask you common questions and provide feedback on your answers, pacing, and use of filler words.
+                    </p>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <i class="fa-solid fa-robot" style="font-size: 4rem; color: var(--text-muted); margin-bottom: 20px;"></i>
+                    <h4 style="color: #fff;">Ready to Start?</h4>
+                    <p style="color: var(--text-muted); margin: 10px 0 20px 0;">Choose an interview type to begin.</p>
+                    <div class="flex gap-10" style="justify-content: center;">
+                        <button class="btn btn-filled" style="flex-basis: 200px;" onclick="startMockInterview('Behavioral')">Behavioral Interview</button>
+                        <button class="btn" style="flex-basis: 200px;" onclick="startMockInterview('Technical')">Technical Interview</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCodingChallenges() {
+            const contentArea = document.getElementById('content-area');
+            const pageTitle = document.getElementById('page-title');
+            pageTitle.innerText = "Coding Challenges";
+
+            contentArea.innerHTML = `
+                <button class="btn" style="margin-bottom: 20px;" onclick="switchTab('interview-prep', document.getElementById('nav-item-interview-prep'))"><i class="fa-solid fa-arrow-left"></i> Back to Hub</button>
+                <div class="card">
+                    <h3><i class="fa-solid fa-code" style="margin-right:10px;"></i>Test Your Problem-Solving Skills</h3>
+                </div>
+                <div class="card">
+                    <table class="lux-table">
+                        <thead>
+                            <tr>
+                                <th>Challenge</th>
+                                <th>Difficulty</th>
+                                <th>Success Rate</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Two Sum</td>
+                                <td><span class="badge badge-accepted">Easy</span></td>
+                                <td>48.5%</td>
+                                <td><button class="btn btn-filled" style="padding:5px 10px; font-size:0.7rem;" onclick="startCodingChallenge('Two Sum')">Start</button></td>
+                            </tr>
+                            <tr>
+                                <td>Reverse a Linked List</td>
+                                <td><span class="badge badge-accepted">Easy</span></td>
+                                <td>72.1%</td>
+                                <td><button class="btn btn-filled" style="padding:5px 10px; font-size:0.7rem;" onclick="startCodingChallenge('Reverse a Linked List')">Start</button></td>
+                            </tr>
+                            <tr>
+                                <td>Validate Binary Search Tree</td>
+                                <td><span class="badge badge-pending">Medium</span></td>
+                                <td>35.9%</td>
+                                <td><button class="btn" style="padding:5px 10px; font-size:0.7rem;" onclick="startCodingChallenge('Validate Binary Search Tree')">Start</button></td>
+                            </tr>
+                            <tr>
+                                <td>Median of Two Sorted Arrays</td>
+                                <td><span class="badge badge-rejected">Hard</span></td>
+                                <td>33.2%</td>
+                                <td><button class="btn" style="padding:5px 10px; font-size:0.7rem;" onclick="startCodingChallenge('Median of Two Sorted Arrays')">Start</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 12. Student: Offer Management
+        function renderOfferManagement(container, title) {
+            title.innerText = "Offer Management";
+
+            let rows = state.offers.map(offer => {
+                let statusBadge = offer.status === 'Accepted' ? 'badge-accepted' : 'badge-pending';
+                return `
+                <tr>
+                    <td>${offer.company}</td>
+                    <td>${offer.title}</td>
+                    <td>${offer.salary}</td>
+                    <td>${offer.date}</td>
+                    <td><span class="badge ${statusBadge}">${offer.status}</span></td>
+                    <td>
+                        ${offer.status !== 'Accepted' ? `<button class="btn" style="padding:5px 10px; font-size:0.7rem; margin-right:5px;" onclick="showToast('Offer from ${offer.company} accepted!', 'success')">Accept</button>` : ''}
+                        <button class="btn btn-danger" style="padding:5px 10px; font-size:0.7rem;" onclick="showToast('Offer from ${offer.company} declined.', 'info')">Decline</button>
+                    </td>
+                </tr>
+                `
+            }).join('');
+
+            container.innerHTML = `
+                <div class="card">
+                    <h3><i class="fa-solid fa-sack-dollar" style="margin-right:10px;"></i>Your Job Offers</h3>
+                    <p style="color:var(--text-muted); margin-top:10px; line-height:1.6;">
+                        Manage all your job offers in one place. Congratulations on your success!
+                    </p>
+                </div>
+                <div class="card">
+                    <table class="lux-table">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Position</th>
+                                <th>Salary</th>
+                                <th>Date Received</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows.length ? rows : '<tr><td colspan="6" style="text-align:center;">No offers received yet.</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 13. Student: Video Interview Integration
+        function renderVideoInterview(container, title) {
+            title.innerText = "Video Interview Integration";
+            container.innerHTML = `
+                <div class="card">
+                    <h3><i class="fa-solid fa-video" style="margin-right:10px;"></i>Video Interviews</h3>
+                    <p style="color:var(--text-muted); margin-top:10px; line-height:1.6;">
+                        Connect with recruiters through integrated video interviews. Practice and record your answers here.
+                    </p>
+                </div>
+                
+                <!-- Active Interview Card -->
+                <div class="card" style="border-left: 4px solid var(--success);">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 style="color: #fff;">Upcoming: Technical Round</h4>
+                            <p style="color: var(--gold-primary);">TechNova Inc.</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;"><i class="fa-regular fa-clock"></i> Starting in 10 minutes</p>
+                        </div>
+                        <button class="btn btn-filled" onclick="startVideoInterface()">Join Room</button>
+                    </div>
+                </div>
+
+                <div class="card" id="video-interface-container" style="text-align: center;">
+                     <div id="video-placeholder">
+                        <i class="fa-solid fa-video-slash" style="font-size: 4rem; color: var(--text-muted); margin-bottom: 20px;"></i>
+                        <h4 style="color: #fff;">Equipment Check</h4>
+                        <p style="color: var(--text-muted); margin: 10px 0 20px 0;">Ensure your camera and microphone are working before joining.</p>
+                        <button class="btn" onclick="testCamera()"><i class="fa-solid fa-camera" style="margin-right: 8px;"></i>Test Camera</button>
+                     </div>
+                     <video id="user-video-feed" autoplay playsinline style="width: 100%; max-width: 600px; border-radius: 8px; border: 2px solid var(--gold-dim); display: none; margin: 0 auto;"></video>
+                     <div id="video-controls" class="hidden" style="margin-top: 15px; display: flex; justify-content: center; gap: 15px;">
+                        <button class="btn btn-danger" onclick="stopCamera()"><i class="fa-solid fa-phone-slash"></i> End Test</button>
+                     </div>
+                </div>
+            `;
+        }
+
+        function testCamera() {
+            const video = document.getElementById('user-video-feed');
+            const placeholder = document.getElementById('video-placeholder');
+            const controls = document.getElementById('video-controls');
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                showToast('Requesting camera access...', 'info');
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        video.style.display = 'block';
+                        placeholder.style.display = 'none';
+                        controls.classList.remove('hidden');
+                        controls.style.display = 'flex';
+                        showToast('Camera active', 'success');
+                    })
+                    .catch(function (error) {
+                        showToast('Camera access denied or error: ' + error.message, 'error');
+                    });
+            } else {
+                showToast('Media devices not supported in this browser', 'error');
+            }
+        }
+
+        function stopCamera() {
+            const video = document.getElementById('user-video-feed');
+            const placeholder = document.getElementById('video-placeholder');
+            const controls = document.getElementById('video-controls');
+            
+            if (video.srcObject) {
+                const tracks = video.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+            }
+            
+            video.style.display = 'none';
+            placeholder.style.display = 'block';
+            controls.classList.add('hidden');
+            controls.style.display = 'none';
+        }
+
+        function startVideoInterface() {
+             const contentArea = document.getElementById('content-area');
+             contentArea.innerHTML = `
+                <div class="card" style="height: 80vh; display: flex; flex-direction: column; padding: 0; overflow: hidden;">
+                    <!-- Main Area: Interviewer (Audio/Avatar) -->
+                    <div style="flex-grow: 1; background: #1e1e1e; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        
+                        <!-- Interviewer Avatar -->
+                        <div id="interviewer-avatar" style="width: 150px; height: 150px; border-radius: 50%; background: #333; display: flex; justify-content: center; align-items: center; border: 4px solid var(--gold-dim); box-shadow: 0 0 20px rgba(0,0,0,0.5); transition: border-color 0.3s;">
+                            <i class="fa-solid fa-user-tie" style="font-size: 4rem; color: var(--text-muted);"></i>
+                        </div>
+                        
+                        <h3 id="interviewer-name" style="margin-top: 20px; color: var(--gold-primary);">Hiring Manager</h3>
+                        <p id="interviewer-status" style="color: var(--text-muted); margin-top: 5px;"><i class="fa-solid fa-microphone-slash"></i> Connecting...</p>
+                        
+                        <!-- Speaking Visualizer -->
+                        <div id="voice-wave" class="hidden" style="display: flex; gap: 5px; height: 30px; align-items: center; margin-top: 15px;">
+                            <div class="wave-bar" style="width: 4px; height: 10px; background: var(--gold-primary); animation: wave 0.5s infinite;"></div>
+                            <div class="wave-bar" style="width: 4px; height: 20px; background: var(--gold-primary); animation: wave 0.5s infinite 0.1s;"></div>
+                            <div class="wave-bar" style="width: 4px; height: 15px; background: var(--gold-primary); animation: wave 0.5s infinite 0.2s;"></div>
+                            <div class="wave-bar" style="width: 4px; height: 25px; background: var(--gold-primary); animation: wave 0.5s infinite 0.3s;"></div>
+                            <div class="wave-bar" style="width: 4px; height: 10px; background: var(--gold-primary); animation: wave 0.5s infinite 0.4s;"></div>
+                        </div>
+
+                        <!-- User PIP -->
+                        <div style="position: absolute; bottom: 20px; right: 20px; width: 240px; aspect-ratio: 16/9; background: #000; border: 2px solid #444; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                            <video id="user-pip-video" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                            <div style="position: absolute; bottom: 5px; left: 10px; font-size: 0.7rem; color: white; text-shadow: 0 1px 2px black;">You</div>
+                        </div>
+
+                        <!-- Subtitles -->
+                        <div id="question-display" style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 20px; color: white; text-align: center; max-width: 80%; display: none;"></div>
+                    </div>
+
+                    <!-- Controls -->
+                    <div style="padding: 20px; display: flex; justify-content: center; gap: 20px; background: var(--bg-panel); border-top: 1px solid #333;">
+                        <button class="btn" onclick="toggleMute(this)" style="border-radius: 50%; width: 50px; height: 50px;"><i class="fa-solid fa-microphone"></i></button>
+                        <button class="btn" onclick="toggleVideo(this)" style="border-radius: 50%; width: 50px; height: 50px;"><i class="fa-solid fa-video"></i></button>
+                        <button class="btn btn-danger" style="border-radius: 50%; width: 50px; height: 50px;" onclick="endVideoCall()"><i class="fa-solid fa-phone-slash"></i></button>
+                    </div>
+                </div>
+                <style>
+                    @keyframes wave {
+                        0%, 100% { height: 10px; }
+                        50% { height: 30px; }
+                    }
+                </style>
+             `;
+             
+             // Initialize Speech Recognition if available
+             if (SpeechRecognition) {
+                speechRecognitionController = new SpeechRecognition();
+                speechRecognitionController.continuous = false; // Listen for a single utterance
+                speechRecognitionController.lang = 'en-US';
+                speechRecognitionController.interimResults = false;
+                speechRecognitionController.maxAlternatives = 1;
+             }
+
+             // Start camera for the call
+             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                    .then(function (stream) {
+                        currentInterviewStream = stream;
+                        const video = document.getElementById('user-pip-video');
+                        if(video) video.srcObject = stream;
+                        
+                        // Start Interview Sequence
+                        setTimeout(startInterviewBot, 2000);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast("Camera access required for interview.", "error");
+                        // Attempt to run bot anyway for demo
+                        setTimeout(startInterviewBot, 1000);
+                    });
+            }
+        }
+
+        function endVideoCall() {
+            // Stop TTS
+            if (speechSynthController) {
+                speechSynthController.cancel();
+            }
+            
+            // Stop Camera
+            if (currentInterviewStream) {
+                currentInterviewStream.getTracks().forEach(track => track.stop());
+                currentInterviewStream = null;
+            }
+
+            // Return to menu
+            loadContent('video-interviews');
+        }
+
+        function startInterviewBot() {
+            const statusEl = document.getElementById('interviewer-status');
+            const avatarEl = document.getElementById('interviewer-avatar');
+            
+            if(!statusEl) return;
+
+            // Update Status
+            statusEl.innerHTML = '<i class="fa-solid fa-microphone"></i> Voice Active';
+            statusEl.style.color = 'var(--success)';
+            if(avatarEl) avatarEl.style.borderColor = 'var(--success)';
+
+            // Welcome Message
+            speakText("Hello! I am the hiring manager. I cannot turn on my camera today, but I am excited to speak with you. Let's start with a few questions.");
+            
+            // Start Question Loop
+            setTimeout(() => askNextQuestion(0), 9000);
+        }
+
+        function askNextQuestion(index) {
+             const questions = [
+                 "Tell me about yourself.",
+                 "What are your greatest strengths?",
+                 "Why do you want to work for this company?",
+                 "Describe a difficult challenge you overcame.",
+                 "Do you have any questions for us?"
+             ];
+
+             if (index >= questions.length) {
+                 speakText("Thank you for your time. We will be in touch shortly. Goodbye!");
+                 setTimeout(endVideoCall, 5000);
+                 return;
+             }
+
+             const q = questions[index];
+             
+             // Show Subtitle
+             const subEl = document.getElementById('question-display');
+             if(subEl) {
+                 subEl.innerText = q;
+                 subEl.style.display = 'block';
+             }
+
+             // Speak
+             speakText(q, () => {
+                 // After speaking, wait for "User Answer" (Simulated delay)
+                 const statusEl = document.getElementById('interviewer-status');
+                 if(statusEl) {
+                    statusEl.innerHTML = '<i class="fa-solid fa-ear-listen"></i> Listening...';
+                    statusEl.style.color = 'var(--gold-primary)';
+                    const av = document.getElementById('interviewer-avatar');
+                    if(av) av.style.borderColor = 'var(--gold-primary)';
+                 }
+                 
+                 setTimeout(() => { if(subEl) subEl.style.display = 'none'; }, 3000);
+
+                 // NEW: Replace fixed timeout with speech recognition
+                 const proceed = () => {
+                     // Stop any lingering recognition
+                    if (speechRecognitionController && isRecognizing) {
+                        speechRecognitionController.stop();
+                        isRecognizing = false;
+                    }
+                     const statusEl = document.getElementById('interviewer-status');
+                     if(statusEl) {
+                        statusEl.innerHTML = '<i class="fa-solid fa-microphone"></i> Voice Active';
+                        statusEl.style.color = 'var(--success)';
+                        const av = document.getElementById('interviewer-avatar');
+                        if(av) av.style.borderColor = 'var(--success)';
+                     }
+                     askNextQuestion(index + 1);
+                 };
+
+                 if (speechRecognitionController && !isRecognizing) {
+                    isRecognizing = true;
+                    speechRecognitionController.start();
+
+                    speechRecognitionController.onspeechstart = function() {
+                        const pip = document.getElementById('user-pip-video');
+                        if (pip) pip.parentElement.style.borderColor = 'var(--gold-primary)';
+                    };
+
+                    speechRecognitionController.onresult = function(event) {
+                        console.log('User answer detected:', event.results[0][0].transcript);
+                        showToast('Thank you for your answer.', 'info');
+                    };
+
+                    speechRecognitionController.onend = function() {
+                        isRecognizing = false;
+                        const pip = document.getElementById('user-pip-video');
+                        if (pip) pip.parentElement.style.borderColor = '#444';
+                        setTimeout(proceed, 1000); // Move to next question after a short pause
+                    };
+
+                    speechRecognitionController.onerror = function(event) {
+                        if (event.error === 'no-speech') showToast("I didn't hear an answer, let's move on.", 'info');
+                    };
+                 } else {
+                    setTimeout(proceed, 8000); // Fallback for browsers without SpeechRecognition
+                 }
+             });
+        }
+
+        function speakText(text, callback) {
+            if (!speechSynthController) return;
+            
+            speechSynthController.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            // utterance.voice = ... (optional: select a specific voice)
+            
+            const waveEl = document.getElementById('voice-wave');
+            if(waveEl) waveEl.classList.remove('hidden');
+
+            utterance.onend = function() {
+                if(waveEl) waveEl.classList.add('hidden');
+                if (callback) callback();
+            };
+
+            speechSynthController.speak(utterance);
+        }
+
+        function toggleMute(btn) {
+            if(currentInterviewStream) {
+                const audioTrack = currentInterviewStream.getAudioTracks()[0];
+                if(audioTrack) {
+                    audioTrack.enabled = !audioTrack.enabled;
+                    btn.innerHTML = audioTrack.enabled ? '<i class="fa-solid fa-microphone"></i>' : '<i class="fa-solid fa-microphone-slash"></i>';
+                    btn.classList.toggle('btn-danger', !audioTrack.enabled);
+                }
+            }
+        }
+
+        function toggleVideo(btn) {
+            if(currentInterviewStream) {
+                const videoTrack = currentInterviewStream.getVideoTracks()[0];
+                if(videoTrack) {
+                    videoTrack.enabled = !videoTrack.enabled;
+                    btn.innerHTML = videoTrack.enabled ? '<i class="fa-solid fa-video"></i>' : '<i class="fa-solid fa-video-slash"></i>';
+                    btn.classList.toggle('btn-danger', !videoTrack.enabled);
+                }
+            }
+        }
+
+        // 14. Admin: New Technologies
+        function renderTechnologies(container, title) {
+            title.innerText = "Trending Technologies";
+            container.innerHTML = `
+                <div class="card">
+                    <h3><i class="fa-solid fa-microchip" style="margin-right:10px;"></i>Manage Technologies</h3>
+                    <p style="color:var(--text-muted); margin-top:10px; line-height:1.6;">
+                        Update the list of trending technologies to guide students.
+                    </p>
+                    <div class="input-group" style="margin-top: 15px; display: flex; gap: 10px;">
+                        <input type="text" id="newTechInput" class="lux-input" placeholder="Enter technology name...">
+                        <button class="btn btn-filled" onclick="addTechnology()">Add</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <table class="lux-table">
+                        <thead>
+                            <tr>
+                                <th>Technology</th>
+                                <th>Category</th>
+                                <th>Demand</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="techTableBody">
+                            <tr><td>Artificial Intelligence</td><td>Data Science</td><td><span class="badge badge-accepted">High</span></td><td><button class="btn btn-danger" style="padding:5px 10px; font-size:0.7rem;" onclick="this.closest('tr').remove()">Remove</button></td></tr>
+                            <tr><td>Blockchain</td><td>Cryptography</td><td><span class="badge badge-pending">Medium</span></td><td><button class="btn btn-danger" style="padding:5px 10px; font-size:0.7rem;" onclick="this.closest('tr').remove()">Remove</button></td></tr>
+                            <tr><td>Cloud Computing</td><td>Infrastructure</td><td><span class="badge badge-accepted">High</span></td><td><button class="btn btn-danger" style="padding:5px 10px; font-size:0.7rem;" onclick="this.closest('tr').remove()">Remove</button></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function addTechnology() {
+            const input = document.getElementById('newTechInput');
+            const val = input.value;
+            if(val) {
+                const tbody = document.getElementById('techTableBody');
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${val}</td><td>General</td><td><span class="badge badge-pending">New</span></td><td><button class="btn btn-danger" style="padding:5px 10px; font-size:0.7rem;" onclick="this.closest('tr').remove()">Remove</button></td>`;
+                tbody.appendChild(row);
+                input.value = '';
+                showToast(`${val} added to list`, 'success');
+            } else {
+                showToast("Please enter a technology name", "error");
+            }
+        }
+
+        // 15. Company: Smart Candidate Search
+        function renderSmartSearch(container, title) {
+            title.innerText = "Smart Candidate Search";
+            container.innerHTML = `
+                <div class="card">
+                    <h3><i class="fa-solid fa-magnifying-glass" style="margin-right:10px;"></i>Find Top Talent</h3>
+                    <p style="color:var(--text-muted); margin-top:10px; line-height:1.6;">
+                        Use filters to search our database of skilled students.
+                    </p>
+                    <div class="flex gap-20" style="margin-top: 20px;">
+                        <input type="text" id="search-skills" class="lux-input" style="flex: 2;" placeholder="Search by skill (e.g., Python, React)...">
+                        <input type="text" id="search-cgpa" class="lux-input" style="flex: 1;" placeholder="Min. CGPA (e.g., 8.0)">
+                        <button class="btn btn-filled" onclick="handleCandidateSearch()">Search</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="flex justify-between items-center" style="margin-bottom: 15px;">
+                        <h4>Search Results</h4>
+                        <button class="btn" onclick="showToast('Selected candidates have been shortlisted!', 'success')"><i class="fa-solid fa-clipboard-check" style="margin-right: 8px;"></i>Bulk Shortlist Selected</button>
+                    </div>
+                    <table class="lux-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" /></th>
+                                <th>Candidate</th>
+                                <th>Branch</th>
+                                <th>CGPA</th>
+                                <th>Key Skills</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="candidate-results">
+                            <!-- Results injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            // Initial render
+            handleCandidateSearch();
+        }
+
+        function handleCandidateSearch() {
+            const skillInput = document.getElementById('search-skills');
+            const cgpaInput = document.getElementById('search-cgpa');
+            
+            // Guard clause if elements don't exist yet (e.g. during tab switch)
+            if(!skillInput) return;
+
+            const skill = skillInput.value.toLowerCase();
+            const cgpa = parseFloat(cgpaInput.value) || 0;
+            
+            const filtered = state.candidates.filter(c => 
+                (c.skills.toLowerCase().includes(skill) || c.branch.toLowerCase().includes(skill)) && 
+                c.cgpa >= cgpa
+            );
+
+            const tbody = document.getElementById('candidate-results');
+            tbody.innerHTML = filtered.map(c => `
+                <tr>
+                    <td><input type="checkbox" /></td>
+                    <td><a href="#" onclick="event.preventDefault(); openStudentProfileModal(${c.id})" style="color: var(--gold-light); text-decoration: underline;">${c.name}</a></td>
+                    <td>${c.branch}</td>
+                    <td>${c.cgpa}</td>
+                    <td>${c.skills}</td>
+                    <td><button class="btn" style="padding:5px 10px; font-size:0.7rem;" onclick="openStudentProfileModal(${c.id})">View Profile</button></td>
+                </tr>
+            `).join('');
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No candidates found matching criteria.</td></tr>';
+            }
+        }
+
+        // 16. Company: Interview Scheduler
+        function renderCompanyInterviewScheduler(container, title) {
+            title.innerText = "Interview Scheduler";
+            
+            let rows = state.interviews.map(int => `
+                <tr>
+                    <td>${int.date} ${int.time}</td>
+                    <td>${int.candidate}</td>
+                    <td>${int.position}</td>
+                    <td><span class="badge ${int.status === 'Confirmed' ? 'badge-accepted' : 'badge-pending'}">${int.status}</span></td>
+                    <td><button class="btn" style="padding:5px 10px; font-size:0.7rem;" onclick="showToast('Reschedule request sent', 'info')">Reschedule</button></td>
+                </tr>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="card">
+                    <h3><i class="fa-solid fa-calendar-days" style="margin-right:10px;"></i>Schedule Interviews</h3>
+                    <p style="color:var(--text-muted); margin-top:10px; line-height:1.6;">
+                        Coordinate interview times for your shortlisted candidates.
+                    </p>
+                    <button class="btn btn-filled" style="margin-top: 15px;" onclick="openScheduleModal()">+ Schedule New Interview</button>
+                </div>
+                <div class="card">
+                    <h4>Your Upcoming Interviews</h4>
+                    <table class="lux-table">
+                         <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Candidate</th>
+                                <th>Position</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function openScheduleModal() {
+            document.getElementById('schedule-modal').classList.remove('hidden');
+        }
+
+        function closeScheduleModal() {
+            document.getElementById('schedule-modal').classList.add('hidden');
+        }
+
+        async function handleScheduleSubmit() {
+            const name = document.getElementById('sched-name').value;
+            const pos = document.getElementById('sched-pos').value;
+            const date = document.getElementById('sched-date').value;
+            const time = document.getElementById('sched-time').value;
+
+            const newInt = {
+                id: Date.now(),
+                candidate: name,
+                position: pos,
+                date: date,
+                time: time,
+                status: "Pending"
+            };
+
+            state.interviews.push(newInt);
+            await saveState();
+            showToast("Interview Scheduled Successfully", "success");
+            closeScheduleModal();
+            loadContent('company-scheduler'); // Refresh view
+        }
+
+        // 17. Company: Offer Letter Generator
+        function renderOfferGenerator(container, title) {
+            title.innerText = "Offer Letter Generator";
+            container.innerHTML = `
+                <div class="card">
+                    <h3><i class="fa-solid fa-file-signature" style="margin-right:10px;"></i>Generate Offer Letter</h3>
+                    <p style="color:var(--text-muted); margin-top:10px; line-height:1.6;">
+                        Create and send official offer letters to selected candidates.
+                    </p>
+                </div>
+                <div class="card" style="max-width: 800px; margin: 20px auto;">
+                    <form id="offer-form" onsubmit="event.preventDefault(); handleGenerateOffer();">
+                        <div class="flex gap-20" style="margin-bottom:20px;">
+                            <div class="input-group" style="flex:1;">
+                                <label>Candidate Name</label>
+                                <input type="text" id="offer-name" class="lux-input" value="Alice Walker">
+                            </div>
+                            <div class="input-group" style="flex:1;">
+                                <label>Candidate Email</label>
+                                <input type="email" id="offer-email" class="lux-input" value="alice.walker@example.com">
+                            </div>
+                        </div>
+                        <div class="flex gap-20" style="margin-bottom:20px;">
+                            <div class="input-group" style="flex:1;">
+                                <label>Position</label>
+                                <input type="text" id="offer-position" class="lux-input" value="Software Engineer">
+                            </div>
+                            <div class="input-group" style="flex:1;">
+                                <label>Annual Salary</label>
+                                <input type="text" id="offer-salary" class="lux-input" value="$120,000">
+                            </div>
+                        </div>
+                        <div class="input-group" style="margin-bottom:20px;">
+                            <label>Proposed Start Date</label>
+                            <input type="date" id="offer-start-date" class="lux-input" required>
+                        </div>
+                        <div class="input-group" style="margin-bottom:20px;">
+                            <label>Offer Letter Template</label>
+                            <select id="offer-template" class="lux-input">
+                                <option>Standard Engineering Offer</option>
+                                <option>Internship Offer Template</option>
+                                <option>Senior Role Offer Template</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="margin-bottom:20px;">
+                            <label>Custom Message</label>
+                            <textarea id="offer-message" class="lux-input" rows="3" placeholder="Add a personal welcome message..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-filled" style="width:100%;">Generate & Download Offer</button>
+                    </form>
+                </div>
+            `;
+        }
+
+        function handleGenerateOffer() {
+            const name = document.getElementById('offer-name').value.trim();
+            const email = document.getElementById('offer-email').value.trim();
+            const position = document.getElementById('offer-position').value.trim();
+            const salary = document.getElementById('offer-salary').value.trim();
+            const startDate = document.getElementById('offer-start-date').value;
+            const message = document.getElementById('offer-message').value.trim();
+            
+            if(!name || !email || !position || !salary || !startDate) {
+                showToast("Please fill in all required fields", "error");
+                return;
+            }
+
+            showToast("Generating offer document...", "info");
+            
+            setTimeout(() => {
+                // Data for the PDF
+                const offerData = {
+                    name,
+                    position,
+                    salary,
+                    startDate,
+                    message,
+                    companyName: "TechNova", // Assuming logged in company
+                    companyRep: state.currentUser.name,
+                    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                };
+
+                generateOfferPDF(offerData);
+
+                const newOffer = {
+                    id: Date.now(),
+                    company: offerData.companyName,
+                    title: position,
+                    status: "Pending",
+                    salary: salary,
+                    date: new Date().toISOString().split('T')[0]
+                };
+                
+                state.offers.push(newOffer);
+            }, 1500);
+        }
+
+        function generateOfferPDF(data) {
+            const { jsPDF } = window.jspdf;
+
+            // 1. Create a container for the letter content
+            const letterContainer = document.createElement('div');
+            letterContainer.id = 'offer-letter-render';
+            letterContainer.style.width = '8.5in';
+            letterContainer.style.height = '11in';
+            letterContainer.style.padding = '0.75in';
+            letterContainer.style.backgroundColor = 'white';
+            letterContainer.style.color = '#333';
+            letterContainer.style.fontFamily = 'Times, serif';
+            letterContainer.style.fontSize = '12pt';
+            letterContainer.style.position = 'absolute';
+            letterContainer.style.left = '-9999px'; // Hide it off-screen
+            letterContainer.style.lineHeight = '1.5';
+            letterContainer.style.boxSizing = 'border-box';
+
+            // 2. Populate with HTML content
+            letterContainer.innerHTML = `
+                <div style="text-align: right; margin-bottom: 40px;">
+                    <h1 style="font-family: 'Cinzel', serif; color: #111; margin: 0;">${data.companyName}</h1>
+                    <p style="margin: 0;">123 Tech Avenue, Silicon Valley, CA 94105</p>
+                    <p style="margin: 0;">${data.date}</p>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <p style="margin: 0;">${data.name}</p>
+                    <p style="margin: 0;">[Candidate Address]</p>
+                    <p style="margin: 0;">[City, State, Zip]</p>
+                </div>
+
+                <h2 style="font-family: 'Cinzel', serif; color: #111; font-size: 1.2em; margin-bottom: 20px;">Subject: Offer of Employment</h2>
+
+                <p>Dear ${data.name},</p>
+
+                <p>On behalf of ${data.companyName}, I am delighted to extend to you an offer of employment for the position of <strong>${data.position}</strong>. We were very impressed with your qualifications and believe you will be a valuable asset to our team.</p>
+                
+                <p>This is a full-time position with a proposed start date of <strong>${new Date(data.startDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>. Your annual starting salary will be <strong>${data.salary}</strong>, payable in semi-monthly installments.</p>
+
+                ${data.message ? `<p><em>${data.message}</em></p>` : ''}
+
+                <p>This offer is contingent upon the successful completion of a background check. Please review the attached documents for details on our benefits package.</p>
+
+                <p>We are excited about the possibility of you joining our team. To accept this offer, please sign and return this letter by [Offer Expiry Date].</p>
+
+                <div style="margin-top: 50px;">
+                    <p>Sincerely,</p>
+                    <p style="margin-top: 30px;">_________________________</p>
+                    <p style="margin: 0;"><strong>${data.companyRep}</strong></p>
+                    <p style="margin: 0;">Hiring Manager, ${data.companyName}</p>
+                </div>
+            `;
+
+            // 3. Append to body to be rendered by html2canvas
+            document.body.appendChild(letterContainer);
+
+            // 4. Use html2canvas and jsPDF
+            html2canvas(letterContainer, { scale: 2, useCORS: true })
+            .then(canvas => {
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
+                pdf.save(`Offer_Letter_${data.name.replace(/ /g, '_')}.pdf`);
+                showToast(`Offer PDF for ${data.name} downloaded!`, 'success');
+                document.body.removeChild(letterContainer); // Clean up
+            }).catch(err => {
+                showToast('Failed to generate PDF.', 'error');
+                console.error(err);
+                document.body.removeChild(letterContainer); // Clean up on fail
+            });
+        }
+
+        // --- RESUME BUILDER FUNCTIONS ---
+        function renderResumeBuilder(container, title) {
+            title.innerText = "Modern Resume Builder";
+            container.innerHTML = `
+                <div class="card" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="flex justify-between items-center" style="margin-bottom: 20px;">
+                        <h3><i class="fa-solid fa-user-edit" style="margin-right:10px;"></i> Build Your Resume</h3>
+                        <button class="btn btn-filled" onclick="openResumePreviewModal()"><i class="fa-solid fa-eye"></i> Preview Resume</button>
+                    </div>
+                    
+                    <form id="resume-form" oninput="previewResume()">
+                        <!-- Personal Details -->
+                        <h4 class="resume-section-header">Personal Details</h4>
+                        <div class="input-group"><label>Profile Photo</label><input type="file" id="resume-photo" class="lux-input" accept="image/*"></div>
+                        <div class="input-group"><label>Full Name</label><input type="text" id="resume-name" class="lux-input" placeholder="e.g. Jane Doe"></div>
+                        <div class="input-group"><label>Job Title</label><input type="text" id="resume-title" class="lux-input" placeholder="e.g. Full Stack Developer"></div>
+                        <div class="flex gap-10">
+                            <div class="input-group" style="flex:1;"><label>Email</label><input type="email" id="resume-email" class="lux-input" placeholder="e.g. jane.doe@email.com"></div>
+                            <div class="input-group" style="flex:1;"><label>Phone</label><input type="tel" id="resume-phone" class="lux-input" placeholder="e.g. +1 234 567 890"></div>
+                        </div>
+                        <div class="flex gap-10">
+                            <div class="input-group" style="flex:1;"><label>Website</label><input type="text" id="resume-website" class="lux-input" placeholder="e.g. yourportfolio.com"></div>
+                            <div class="input-group" style="flex:1;"><label>LinkedIn</label><input type="text" id="resume-linkedin" class="lux-input" placeholder="URL of your profile"></div>
+                        </div>
+
+                        <!-- Profile Summary -->
+                        <h4 class="resume-section-header">Profile Summary</h4>
+                        <div class="input-group"><textarea id="resume-summary" class="lux-input" rows="4" placeholder="A brief summary about your professional self..."></textarea></div>
+
+                        <!-- Skills -->
+                        <h4 class="resume-section-header">Skills</h4>
+                        <div class="input-group">
+                            <div class="flex gap-10">
+                                <input type="text" id="resume-skill-input" class="lux-input" placeholder="e.g. JavaScript">
+                                <button type="button" class="btn" style="padding: 10px;" onclick="addDynamicListItem('skill')">Add</button>
+                            </div>
+                            <div id="resume-skills-tags" class="dynamic-tags-container"></div>
+                        </div>
+
+                        <!-- Languages -->
+                        <h4 class="resume-section-header">Languages</h4>
+                        <div class="input-group">
+                            <div class="flex gap-10">
+                                <input type="text" id="resume-lang-input" class="lux-input" placeholder="e.g. English (Fluent)">
+                                <button type="button" class="btn" style="padding: 10px;" onclick="addDynamicListItem('lang')">Add</button>
+                            </div>
+                            <div id="resume-lang-tags" class="dynamic-tags-container"></div>
+                        </div>
+
+                        <!-- Hobbies -->
+                        <h4 class="resume-section-header">Hobbies</h4>
+                        <div class="input-group">
+                            <div class="flex gap-10">
+                                <input type="text" id="resume-hobby-input" class="lux-input" placeholder="e.g. Photography">
+                                <button type="button" class="btn" style="padding: 10px;" onclick="addDynamicListItem('hobby')">Add</button>
+                            </div>
+                            <div id="resume-hobby-tags" class="dynamic-tags-container"></div>
+                        </div>
+
+                        <!-- Work Experience -->
+                        <h4 class="resume-section-header">Work Experience</h4>
+                        <div id="resume-experience-container">
+                            <div class="resume-group">
+                                <div class="input-group"><label>Company</label><input type="text" class="lux-input resume-exp-company" placeholder="e.g. Google"></div>
+                                <div class="flex gap-10"><div class="input-group" style="flex:1;"><label>Role</label><input type="text" class="lux-input resume-exp-role" placeholder="e.g. Software Engineer Intern"></div><div class="input-group" style="flex:1;"><label>Dates</label><input type="text" class="lux-input resume-exp-dates" placeholder="e.g. Jun 2023 - Aug 2023"></div></div>
+                                <div class="input-group"><label>Description</label><textarea class="lux-input resume-exp-desc" rows="3" placeholder="Describe your responsibilities and achievements. Use bullet points."></textarea></div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn" style="font-size:0.75rem; padding: 5px 10px;" onclick="addResumeSection('experience')">+ Add Experience</button>
+                        
+                        <!-- Education -->
+                        <h4 class="resume-section-header">Education</h4>
+                        <div id="resume-education-container">
+                            <div class="resume-group">
+                                <div class="input-group"><label>University/College</label><input type="text" class="lux-input resume-edu-uni" placeholder="e.g. Stanford University"></div>
+                                <div class="flex gap-10">
+                                    <div class="input-group" style="flex:1;"><label>Degree</label><input type="text" class="lux-input resume-edu-degree" placeholder="e.g. B.S. in Computer Science"></div>
+                                    <div class="input-group" style="flex:1;"><label>Dates</label><input type="text" class="lux-input resume-edu-dates" placeholder="e.g. 2020 - 2024"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn" style="font-size:0.75rem; padding: 5px 10px;" onclick="addResumeSection('education')">+ Add Education</button>
+
+                        <!-- Projects -->
+                        <h4 class="resume-section-header">Projects</h4>
+                        <div id="resume-projects-container">
+                            <div class="resume-group">
+                                <div class="input-group"><label>Project Title</label><input type="text" class="lux-input resume-proj-title" placeholder="e.g. Personal Portfolio Website"></div>
+                                <div class="input-group"><label>Description</label><textarea class="lux-input resume-proj-desc" rows="3" placeholder="Describe the project, its tech stack, and your role."></textarea></div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn" style="font-size:0.75rem; padding: 5px 10px;" onclick="addResumeSection('projects')">+ Add Project</button>
+                    </form>
+                    
+                    <div style="margin-top: 30px; text-align: center;">
+                         <button class="btn btn-filled" style="padding: 15px 40px; font-size: 1.1rem;" onclick="openResumePreviewModal()">Generate Preview</button>
+                    </div>
+                </div>
+
+                <!-- RESUME PREVIEW MODAL -->
+                <div id="resume-preview-modal" class="modal hidden">
+                    <div class="modal-content" style="max-width: 900px; width: 95%; height: 90vh; display: flex; flex-direction: column; padding: 0;">
+                        <div class="flex justify-between items-center" style="padding: 20px; border-bottom: 1px solid #333;">
+                            <h3 style="margin: 0;">Resume Preview</h3>
+                            <i class="fa-solid fa-xmark close-modal" style="font-size: 1.5rem;" onclick="closeResumePreviewModal()"></i>
+                        </div>
+                        
+                        <div style="flex: 1; overflow: auto; background: #555; padding: 20px; display: flex; justify-content: center;">
+                            <div id="resume-preview-wrapper" style="width: 100%; max-width: 210mm; min-height: 297mm; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+                                <div id="resume-preview-container" style="display: flex; width: 100%; min-height: 100%;">
+                                    <!-- Left Column (Dark) -->
+                                    <div id="resume-left-col" style="font-family: 'Lato', sans-serif;">
+                                        <!-- JS-injected -->
+                                    </div>
+                                    <!-- Right Column (Light) -->
+                                    <div id="resume-right-col" style="font-family: 'Lato', sans-serif;">
+                                        <!-- JS-injected -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-10" style="padding: 20px; border-top: 1px solid #333; background: var(--bg-panel);">
+                            <button class="btn btn-danger" onclick="closeResumePreviewModal()">Close</button>
+                            <button class="btn btn-filled" style="flex: 1;" onclick="downloadResumeAsPDF()"><i class="fa-solid fa-download"></i> Download PDF</button>
+                        </div>
+                    </div>
+                </div>
+                <style>
+                    .resume-section-header { margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 8px; }
+                    .resume-group { padding: 15px; border: 1px solid #333; border-radius: 4px; margin-bottom: 15px; }
+                    .dynamic-tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+                    .dynamic-tag { background: var(--gold-dim); color: var(--bg-dark); padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; display: inline-flex; align-items: center; }
+                    
+                    /* Preview Styles */
+                    #resume-preview-container * { font-family: 'Lato', sans-serif; line-height: 1.5; }
+                    #resume-left-col { width: 35%; background: #2c3e50; color: #f0f0f0; padding: 30px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+                    .resume-photo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--gold-primary); }
+                    .resume-photo-placeholder { width: 120px; height: 120px; border-radius: 50%; background: #4a637e; border: 4px solid var(--gold-dim); display: flex; justify-content: center; align-items: center; font-size: 3rem; color: #2c3e50; }
+                    .resume-name { font-family: 'Cinzel', serif; color: #fff; font-size: 1.8em; margin-top: 15px; margin-bottom: 5px; line-height: 1.2; word-break: break-word; }
+                    .resume-job-title { color: var(--gold-primary); font-weight: bold; margin-bottom: 20px; font-size: 0.9em; }
+                    .resume-left-heading { font-family: 'Cinzel', serif; color: #fff; font-size: 1.2em; text-transform: uppercase; letter-spacing: 1px; margin-top: 25px; margin-bottom: 10px; width: 100%; border-bottom: 1px solid var(--gold-dim); padding-bottom: 5px; }
+                    .resume-contact-info { text-align: left; width: 100%; }
+                    .resume-contact-info p { font-size: 0.85em; margin-bottom: 5px; word-break: break-all; display: flex; align-items: center; }
+                    .resume-contact-info i { color: var(--gold-primary); margin-right: 10px; width: 16px; text-align: center; }
+                    .resume-list { list-style: none; padding: 0; font-size: 0.9em; text-align: center; }
+                    .resume-list li { margin-bottom: 5px; }
+
+                    #resume-right-col { width: 65%; background: #fdfdfd; color: #333; padding: 30px; overflow-y: auto; }
+                    .resume-right-heading { font-family: 'Cinzel', serif; color: #2c3e50; font-size: 1.5em; border-bottom: 2px solid var(--gold-dim); padding-bottom: 5px; margin-bottom: 15px; margin-top: 20px; }
+                    #resume-right-col h2:first-of-type { margin-top: 0; }
+                    .resume-summary { color: #555; margin-bottom: 20px; }
+                    .resume-item { margin-bottom: 20px; }
+                    .resume-item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; flex-wrap: wrap; }
+                    .resume-item-title { font-size: 1.1em; font-weight: bold; color: #000; }
+                    .resume-item-subtitle { font-size: 1em; font-weight: normal; color: #444; }
+                    .resume-item-date { font-style: italic; color: #555; font-size: 0.9em; white-space: nowrap; margin-left: 10px; }
+                    .resume-item-body { font-size: 0.9em; color: #555; padding-left: 0; }
+                    .resume-item-body ul { list-style-position: outside; padding-left: 20px; margin-top: 5px; }
+                </style>
+            `;
+            // Trigger initial preview
+            previewResume();
+            // Add listener for photo upload
+            const photoInput = document.getElementById('resume-photo');
+            if(photoInput) {
+                photoInput.addEventListener('change', previewResume);
+            }
+        }
+
+        function addDynamicListItem(type) {
+            const input = document.getElementById(`resume-${type}-input`);
+            const container = document.getElementById(`resume-${type}-tags`);
+            const value = input.value.trim();
+
+            if (value && container) {
+                const tag = document.createElement('span');
+                tag.className = 'dynamic-tag';
+                tag.innerText = value;
+                
+                const removeBtn = document.createElement('i');
+                removeBtn.className = 'fa-solid fa-xmark';
+                removeBtn.style.marginLeft = '8px';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.onclick = () => {
+                    tag.remove();
+                    previewResume(); // Update preview on removal
+                };
+                
+                tag.appendChild(removeBtn);
+                container.appendChild(tag);
+                input.value = '';
+                previewResume(); // Update preview on addition
+            }
+        }
+
+        function addResumeSection(type) {
+            const containerId = `resume-${type}-container`;
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const group = container.querySelector('.resume-group');
+            if(!group) return; // Should not happen
+            
+            const newGroup = group.cloneNode(true);
+            
+            // Clear input values in the cloned group
+            newGroup.querySelectorAll('input, textarea').forEach(input => input.value = '');
+            
+            container.appendChild(newGroup);
+            showToast(`Added new ${type} section`, 'info');
+        }
+        
+        function openResumePreviewModal() {
+            document.getElementById('resume-preview-modal').classList.remove('hidden');
+            previewResume(); // Ensure it's up to date
+        }
+
+        function closeResumePreviewModal() {
+            document.getElementById('resume-preview-modal').classList.add('hidden');
+        }
+
+        function previewResume() {
+            const leftCol = document.getElementById('resume-left-col');
+            const rightCol = document.getElementById('resume-right-col');
+            if (!leftCol || !rightCol) return;
+
+            // --- LEFT COLUMN DATA ---
+            const photoInput = document.getElementById('resume-photo');
+            const name = document.getElementById('resume-name').value;
+            const title = document.getElementById('resume-title').value;
+            const email = document.getElementById('resume-email').value;
+            const phone = document.getElementById('resume-phone').value;
+            const website = document.getElementById('resume-website').value;
+            const linkedin = document.getElementById('resume-linkedin').value;
+
+            let photoHTML = '<div class="resume-photo-placeholder"><i class="fa-solid fa-user"></i></div>';
+            if (photoInput.files && photoInput.files[0]) {
+                const photoURL = URL.createObjectURL(photoInput.files[0]);
+                photoHTML = `<img src="${photoURL}" class="resume-photo" onload="URL.revokeObjectURL(this.src)">`;
+            }
+
+            const skillsHTML = Array.from(document.querySelectorAll('#resume-skills-tags .dynamic-tag'))
+                .map(tag => `<li>${tag.firstChild.textContent}</li>`).join('');
+            
+            const langsHTML = Array.from(document.querySelectorAll('#resume-lang-tags .dynamic-tag'))
+                .map(tag => `<li>${tag.firstChild.textContent}</li>`).join('');
+
+            const hobbiesHTML = Array.from(document.querySelectorAll('#resume-hobby-tags .dynamic-tag'))
+                .map(tag => `<li>${tag.firstChild.textContent}</li>`).join('');
+
+            leftCol.innerHTML = `
+                ${photoHTML}
+                <h1 class="resume-name">${name || 'Your Name'}</h1>
+                <p class="resume-job-title">${title || 'Job Title'}</p>
+                
+                <h2 class="resume-left-heading">Contact</h2>
+                <div class="resume-contact-info">
+                    ${phone ? `<p><i class="fa-solid fa-phone"></i> ${phone}</p>` : ''}
+                    ${email ? `<p><i class="fa-solid fa-envelope"></i> ${email}</p>` : ''}
+                    ${website ? `<p><i class="fa-solid fa-globe"></i> ${website}</p>` : ''}
+                    ${linkedin ? `<p><i class="fa-brands fa-linkedin"></i> <a href="${linkedin}" target="_blank" style="color: #f0f0f0;">LinkedIn</a></p>` : ''}
+                </div>
+
+                ${skillsHTML ? `<h2 class="resume-left-heading">Skills</h2><ul class="resume-list">${skillsHTML}</ul>` : ''}
+                ${langsHTML ? `<h2 class="resume-left-heading">Languages</h2><ul class="resume-list">${langsHTML}</ul>` : ''}
+                ${hobbiesHTML ? `<h2 class="resume-left-heading">Hobbies</h2><ul class="resume-list">${hobbiesHTML}</ul>` : ''}
+            `;
+
+            // --- RIGHT COLUMN DATA ---
+            const summary = document.getElementById('resume-summary').value.replace(/\n/g, '<br>');
+
+            let expHTML = '';
+            document.querySelectorAll('#resume-experience-container .resume-group').forEach(group => {
+                const company = group.querySelector('.resume-exp-company').value;
+                const role = group.querySelector('.resume-exp-role').value;
+                const dates = group.querySelector('.resume-exp-dates').value;
+                const desc = group.querySelector('.resume-exp-desc').value;
+                if (company || role) {
+                    expHTML += `
+                        <div class="resume-item">
+                            <div class="resume-item-header">
+                                <div>
+                                    <div class="resume-item-title">${role}</div>
+                                    <div class="resume-item-subtitle">${company}</div>
+                                </div>
+                                <div class="resume-item-date">${dates}</div>
+                            </div>
+                            <div class="resume-item-body">
+                                <ul>${desc.split('\n').map(line => line.trim() ? `<li>${line.trim()}</li>` : '').join('')}</ul>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            let eduHTML = '';
+            document.querySelectorAll('#resume-education-container .resume-group').forEach(group => {
+                const uni = group.querySelector('.resume-edu-uni').value;
+                const degree = group.querySelector('.resume-edu-degree').value;
+                const dates = group.querySelector('.resume-edu-dates').value;
+                if (uni || degree) {
+                    eduHTML += `
+                        <div class="resume-item">
+                            <div class="resume-item-header">
+                                <div>
+                                    <div class="resume-item-title">${degree}</div>
+                                    <div class="resume-item-subtitle">${uni}</div>
+                                </div>
+                                <div class="resume-item-date">${dates}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            let projHTML = '';
+            document.querySelectorAll('#resume-projects-container .resume-group').forEach(group => {
+                const title = group.querySelector('.resume-proj-title').value;
+                const desc = group.querySelector('.resume-proj-desc').value.replace(/\n/g, '<br>');
+                if (title) {
+                    projHTML += `
+                        <div class="resume-item">
+                            <div class="resume-item-header">
+                                <div class="resume-item-title">${title}</div>
+                            </div>
+                            <div class="resume-item-body">${desc}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            rightCol.innerHTML = `
+                ${summary ? `<h2 class="resume-right-heading">Profile</h2><p class="resume-summary">${summary}</p>` : ''}
+                ${expHTML ? `<h2 class="resume-right-heading">Work Experience</h2>${expHTML}` : ''}
+                ${eduHTML ? `<h2 class="resume-right-heading">Education</h2>${eduHTML}` : ''}
+                ${projHTML ? `<h2 class="resume-right-heading">Projects</h2>${projHTML}` : ''}
+            `;
+        }
+
+        function downloadResumeAsPDF() {
+            const { jsPDF } = window.jspdf;
+            const resume = document.getElementById('resume-preview-container');
+            const name = document.getElementById('resume-name').value || 'resume';
+
+            if (!name) {
+                showToast('Please fill in your name before downloading.', 'error');
+                return;
+            }
+
+            showToast('Generating PDF...', 'info');
+
+            html2canvas(resume, {
+                scale: 2, // Higher scale for better quality
+                useCORS: true,
+                backgroundColor: null // Use element's background
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'px',
+                    format: [canvas.width, canvas.height]
+                });
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                pdf.save(`${name.replace(/ /g, '_')}_Resume.pdf`);
+                showToast('PDF downloaded successfully!', 'success');
+            }).catch(err => {
+                showToast('Failed to generate PDF. See console for details.', 'error');
+                console.error(err);
+            });
+        }
+
+        // --- INTERVIEW PREP FUNCTIONS ---
+
+        function downloadResumeTemplates() {
+            showToast('Downloading templates...', 'info');
+            setTimeout(() => {
+                showToast('Resume_Templates_Pack.zip downloaded successfully!', 'success');
+            }, 1500);
+        }
+
+        function startMockInterview(type) {
+            const contentArea = document.getElementById('content-area');
+            const pageTitle = document.getElementById('page-title');
+            pageTitle.innerText = `${type} Mock Interview`;
+
+            currentInterviewType = type.toLowerCase();
+            currentQuestionIndex = 0; // Reset index
+            currentConversation = []; // Reset conversation
+            const firstQuestion = interviewQuestions[currentInterviewType][0];
+            currentConversation.push({ sender: 'bot', text: firstQuestion });
+
+            contentArea.innerHTML = `
+                <button class="btn" style="margin-bottom: 20px;" onclick="renderMockInterviews()"><i class="fa-solid fa-arrow-left"></i> End Interview</button>
+                <div class="card" style="height: 60vh; display: flex; flex-direction: column;">
+                    <div id="mock-chat-area" style="flex-grow: 1; overflow-y: auto; padding: 15px; border: 1px solid #333; border-radius: 4px; margin-bottom: 15px; background: var(--bg-panel-lighter);">
+                        <div class="ai-msg-bot">Hello! I'm your AI interviewer for this ${type} session. Let's begin. ${firstQuestion}</div>
+                    </div>
+                    <div class="flex gap-10">
+                        <input type="text" id="mock-input" class="lux-input" placeholder="Type your answer..." style="flex-grow: 1;" onkeypress="if(event.key === 'Enter') submitMockAnswer()">
+                        <button class="btn btn-filled" onclick="submitMockAnswer()">Send</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function submitMockAnswer() {
+            const input = document.getElementById('mock-input');
+            const area = document.getElementById('mock-chat-area');
+            const text = input.value.trim();
+            if(!text) return;
+
+            currentConversation.push({ sender: 'user', text: text });
+
+            // User msg
+            const userDiv = document.createElement('div');
+            userDiv.className = 'ai-msg-user';
+            userDiv.innerText = text;
+            userDiv.style.marginTop = '10px';
+            area.appendChild(userDiv);
+            
+            input.value = '';
+            area.scrollTop = area.scrollHeight;
+
+            // Bot response simulation
+            setTimeout(() => {
+                currentQuestionIndex++;
+                const questions = interviewQuestions[currentInterviewType];
+                let nextQuestion;
+
+                if (currentQuestionIndex < questions.length) {
+                    nextQuestion = questions[currentQuestionIndex];
+                } else {
+                    nextQuestion = "That was the last question. Thank you for your time! Click the button below to get AI feedback on your performance.";
+                    input.disabled = true;
+                    const sendButton = document.querySelector('#mock-chat-area + .flex .btn-filled');
+                    if(sendButton) sendButton.disabled = true;
+
+                    // Add a feedback button
+                    const feedbackBtn = document.createElement('button');
+                    feedbackBtn.className = 'btn btn-filled';
+                    feedbackBtn.innerText = 'Get AI Feedback';
+                    feedbackBtn.style.marginTop = '15px';
+                    feedbackBtn.style.width = '100%';
+                    feedbackBtn.onclick = generateInterviewFeedback;
+                    document.querySelector('.card:has(#mock-chat-area)').appendChild(feedbackBtn);
+                }
+
+                const botDiv = document.createElement('div');
+                botDiv.className = 'ai-msg-bot';
+                botDiv.innerText = nextQuestion;
+                botDiv.style.marginTop = '10px';
+                area.appendChild(botDiv);
+                area.scrollTop = area.scrollHeight;
+
+                currentConversation.push({ sender: 'bot', text: nextQuestion });
+            }, 1000);
+        }
+
+        function generateInterviewFeedback() {
+            const contentArea = document.getElementById('content-area');
+            const pageTitle = document.getElementById('page-title');
+            pageTitle.innerText = "Interview Performance Review";
+
+            showToast("AI is analyzing your answers...", "info");
+
+            // Simulate analysis
+            setTimeout(() => {
+                const userAnswers = currentConversation.filter(m => m.sender === 'user');
+                const averageLength = userAnswers.reduce((acc, ans) => acc + ans.text.split(' ').length, 0) / userAnswers.length;
+
+                let feedbackPoints = [];
+
+                if (averageLength < 20) {
+                    feedbackPoints.push({ title: "Answer Detail", rating: "Needs Improvement", comment: "Your answers were a bit brief. Try to elaborate more using the STAR method (Situation, Task, Action, Result)." });
+                } else if (averageLength > 150) {
+                    feedbackPoints.push({ title: "Coniseness", rating: "Needs Improvement", comment: "Your answers were quite long. Try to be more concise to keep the interviewer engaged." });
+                } else {
+                    feedbackPoints.push({ title: "Answer Length", rating: "Good", comment: "Your answers were of a good length, providing sufficient detail without being verbose." });
+                }
+
+                const confidenceKeywords = ['led', 'managed', 'achieved', 'improved', 'created'];
+                let confidenceScore = userAnswers.filter(ans => confidenceKeywords.some(kw => ans.text.toLowerCase().includes(kw))).length;
+
+                if (confidenceScore / userAnswers.length >= 0.4) {
+                    feedbackPoints.push({ title: "Confident Language", rating: "Excellent", comment: "You used strong, confident action verbs to describe your experiences. This is very effective." });
+                } else {
+                    feedbackPoints.push({ title: "Language Use", rating: "Good", comment: "Consider using more powerful action verbs to describe your accomplishments." });
+                }
+
+                const fillerWords = ['um', 'uh', 'like', 'you know'];
+                let fillerCount = 0;
+                userAnswers.forEach(ans => { fillerWords.forEach(fw => { fillerCount += (ans.text.toLowerCase().match(new RegExp(`\\b${fw}\\b`, 'g')) || []).length; }); });
+
+                if (fillerCount > 2) {
+                    feedbackPoints.push({ title: "Filler Words", rating: "Needs Improvement", comment: `We detected potential use of filler words. Practice pausing to think instead of using fillers.` });
+                } else {
+                    feedbackPoints.push({ title: "Clarity", rating: "Excellent", comment: "Your responses were clear and articulate, with minimal use of filler words. Great job!" });
+                }
+
+                let feedbackHTML = feedbackPoints.map(fb => `
+                    <div class="stat-card" style="text-align: left;">
+                        <div class="flex justify-between items-center">
+                            <h4 style="color: #fff;">${fb.title}</h4>
+                            <span class="badge ${fb.rating === 'Excellent' || fb.rating === 'Good' ? 'badge-accepted' : 'badge-rejected'}">${fb.rating}</span>
+                        </div>
+                        <p style="margin: 10px 0; color: var(--text-muted);">${fb.comment}</p>
+                    </div>
+                `).join('');
+
+                contentArea.innerHTML = `
+                    <button class="btn" style="margin-bottom: 20px;" onclick="renderMockInterviews()"><i class="fa-solid fa-arrow-left"></i> Back to Mock Interviews</button>
+                    <div class="card"><h3><i class="fa-solid fa-magnifying-glass-chart" style="margin-right:10px;"></i>Your AI Feedback Report</h3></div>
+                    <div class="stats-grid">${feedbackHTML}</div>
+                    <div class="card"><h4>Your Full Transcript</h4><div id="transcript-area" style="margin-top: 15px; max-height: 300px; overflow-y: auto; background: var(--bg-panel-lighter); padding: 15px; border-radius: 4px;">
+                        ${currentConversation.map(msg => `<div class="ai-msg-${msg.sender}" style="margin-top: 5px;">${msg.text}</div>`).join('')}
+                    </div></div>`;
+            }, 2000);
+        }
+
+        function startCodingChallenge(title) {
+            const contentArea = document.getElementById('content-area');
+            const pageTitle = document.getElementById('page-title');
+            pageTitle.innerText = `Challenge: ${title}`;
+
+            contentArea.innerHTML = `
+                <button class="btn" style="margin-bottom: 20px;" onclick="renderCodingChallenges()"><i class="fa-solid fa-arrow-left"></i> Back to Challenges</button>
+                <div class="flex gap-20" style="height: 70vh;">
+                    <div class="card" style="flex: 1; overflow-y: auto;">
+                        <h4>Problem Description</h4>
+                        <p style="color: var(--text-muted); margin-top: 10px; line-height: 1.6;">
+                            Given an array of integers <code>nums</code> and an integer <code>target</code>, return indices of the two numbers such that they add up to <code>target</code>.
+                        </p>
+                        <h5 style="margin-top: 20px; color: #fff;">Example 1:</h5>
+                        <pre style="background: #000; padding: 10px; border-radius: 4px; margin-top: 5px; color: var(--text-muted); font-size: 0.85rem;">Input: nums = [2,7,11,15], target = 9\nOutput: [0,1]</pre>
+                    </div>
+                    <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+                        <h4 style="margin-bottom: 10px;">Code Editor (JavaScript)</h4>
+                        <textarea id="code-editor" class="lux-input" style="flex-grow: 1; font-family: monospace; line-height: 1.5; resize: none;">function twoSum(nums, target) {\n    // Write your code here\n    \n}</textarea>
+                        <div class="flex gap-10" style="margin-top: 15px;">
+                            <button class="btn" style="flex: 1;" onclick="showToast('Running test cases...', 'info')">Run Code</button>
+                            <button class="btn btn-filled" style="flex: 1;" onclick="showToast('Solution Submitted! All tests passed.', 'success')">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- INTERACTION LOGIC ---
+
+        let currentJobIdForApp = null;
+
+        function openApplicationModal(jobId) {
+            const job = state.jobs.find(j => j.id === jobId);
+            
+            // Check if already applied
+            const exists = state.applications.find(a => a.jobId === jobId && a.studentName === state.currentUser.name);
+            if(exists) {
+                showToast("You have already applied to this position.", "error");
+                return;
+            }
+
+            currentJobIdForApp = jobId;
+            document.getElementById('modal-job-title').innerText = job.title;
+            document.getElementById('modal-company').innerText = job.company;
+            document.getElementById('app-name').value = state.currentUser.name;
+            
+            document.getElementById('application-modal').classList.remove('hidden');
+        }
+
+        function viewApplication(appId) {
+            const app = state.applications.find(a => a.id === appId);
+            if (!app) return;
+            const job = state.jobs.find(j => j.id === app.jobId) || { title: 'Unknown', company: 'Unknown' };
+
+            document.getElementById('modal-job-title').innerText = job.title;
+            document.getElementById('modal-company').innerText = job.company;
+            
+            document.getElementById('app-name').value = app.studentName;
+            document.getElementById('app-email').value = "student@example.com"; 
+            document.getElementById('app-cover').value = "Application submitted on " + app.date + ".";
+            
+            // Set View Mode
+            document.getElementById('app-email').readOnly = true;
+            document.getElementById('app-cover').readOnly = true;
+            document.querySelector('#application-modal h3').innerText = "Application Details";
+            document.querySelector('#application-form button[type=\"submit\"]').classList.add('hidden');
+            document.querySelector('#application-form button.btn-danger').innerText = "Close";
+
+            document.getElementById('application-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('application-modal').classList.add('hidden');
+            document.getElementById('application-form').reset();
+            currentJobIdForApp = null;
+
+            // Revert View Mode
+            document.getElementById('app-email').readOnly = false;
+            document.getElementById('app-cover').readOnly = false;
+            document.querySelector('#application-modal h3').innerText = "Apply for Position";
+            document.querySelector('#application-form button[type=\"submit\"]').classList.remove('hidden');
+            document.querySelector('#application-form button.btn-danger').innerText = "Cancel";
+        }
+
+        function openStudentProfileModal(candidateId) {
+            const candidate = state.candidates.find(c => c.id === candidateId);
+            if (!candidate) {
+                showToast("Candidate not found.", "error");
+                return;
+            }
+
+            const modal = document.getElementById('student-profile-modal');
+            const content = document.getElementById('student-profile-content');
+
+            content.innerHTML = `
+                <div class="flex items-center gap-20" style="border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
+                    <img src="https://picsum.photos/seed/${candidate.name.replace(/ /g, '')}/100/100" alt="User" class="avatar" style="width: 80px; height: 80px;">
+                    <div>
+                        <h3 style="margin-bottom: 5px;">${candidate.name}</h3>
+                        <p style="color: var(--gold-primary);">${candidate.branch}</p>
+                    </div>
+                </div>
+                <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="stat-card">
+                        <div class="stat-number">${candidate.cgpa}</div>
+                        <p>CGPA</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${candidate.skills.split(',').length}</div>
+                        <p>Key Skills</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h4><i class="fa-solid fa-star" style="margin-right:10px;"></i> Key Skills</h4>
+                    <div style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px;">
+                        ${candidate.skills.split(',').map(skill => `<span class="badge badge-pending">${skill.trim()}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="card">
+                     <h4><i class="fa-solid fa-file-lines" style="margin-right:10px;"></i> Resume</h4>
+                     <p style="color: var(--text-muted); margin-top: 10px;">The candidate's resume is available for download.</p>
+                     <button class="btn btn-filled" style="margin-top: 15px;" onclick="showToast('Downloading resume for ${candidate.name}...', 'info')">Download Resume (PDF)</button>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeStudentProfileModal() {
+            document.getElementById('student-profile-modal').classList.add('hidden');
+        }
+
+        async function submitApplication(event) {
+            event.preventDefault();
+            
+            if (!currentJobIdForApp) return;
+
+            const job = state.jobs.find(j => j.id === currentJobIdForApp);
+            
+            const newApp = {
+                id: Date.now(),
+                jobId: currentJobIdForApp,
+                studentName: state.currentUser.name,
+                role: "Student",
+                status: "Pending",
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            state.applications.push(newApp);
+            await saveState();
+            showToast(`Application sent to ${job.company}`, "success");
+            closeModal();
+        }
+
+        async function handleProfileUpdate() {
+            const branch = document.getElementById('profBranch').value;
+            const year = document.getElementById('profYear').value;
+            const cgpa = document.getElementById('profCGPA').value;
+            const resumeInput = document.getElementById('profResume');
+            
+            if (!branch || !year || !cgpa) {
+                showToast("Please fill in all academic details", "error");
+                return;
+            }
+
+            let resumeName = state.studentProfile.resume;
+            if (resumeInput.files.length > 0) {
+                resumeName = resumeInput.files[0].name;
+            }
+
+            state.studentProfile = { branch, year, cgpa, resume: resumeName };
+            await saveState();
+
+            showToast("Profile updated successfully", "success");
+            // Refresh view to show saved state
+            loadContent('profile');
+        }
+
+        async function handlePostJob() {
+            const title = document.getElementById('jobTitle').value;
+            const company = document.getElementById('jobCompany').value;
+            const salary = document.getElementById('jobSalary').value;
+            const type = document.getElementById('jobType').value;
+
+            if(!title || !company) {
+                showToast("Please fill in required fields", "error");
+                return;
+            }
+
+            const newJob = {
+                id: Date.now(),
+                title, company, salary, type, 
+                posted: new Date().toISOString().split('T')[0],
+                status: "Active"
+            };
+
+            state.jobs.unshift(newJob); // Add to top
+            await saveState();
+            showToast("Job Posted Successfully", "success");
+            
+            // If role is company, go back to jobs list, if admin refresh list
+            // For simplicity, we just reload the Post Job form clear, or nav back
+            document.getElementById('post-job-form').reset();
+        }
+
+        async function updateAppStatus(appId, newStatus) {
+            const appIndex = state.applications.findIndex(a => a.id === appId);
+            if (appIndex !== -1) {
+                
+                state.applications[appIndex].status = newStatus;
+                await saveState();
+                showToast(`Application marked as ${newStatus}`, newStatus === 'Accepted' ? 'success' : 'info');
+                // Re-render current view
+                loadContent('manage-apps');
+            }
+        }
+
+        // --- NOTIFICATION FUNCTIONS ---
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notification-badge');
+            const unreadCount = state.notifications.filter(n => !n.read).length;
+
+            if (unreadCount > 0) {
+                badge.innerText = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function toggleNotifications() {
+            const panel = document.getElementById('notification-panel');
+            const isOpen = !panel.classList.contains('hidden');
+            
+            if (isOpen) {
+                panel.classList.add('hidden');
+            } else {
+                renderNotifications();
+                panel.classList.remove('hidden');
+            }
+        }
+
+        function renderNotifications() {
+            const panel = document.getElementById('notification-panel');
+            const unreadCount = state.notifications.filter(n => !n.read).length;
+
+            const itemsHTML = state.notifications.map(n => `
+                <div class="notification-item ${n.read ? '' : 'unread'}" onclick="handleNotificationClick(${n.id})">
+                    <div class="notification-icon">
+                        <i class="fa-solid ${n.icon}" style="color: ${n.color};"></i>
+                    </div>
+                    <div class="notification-text">${n.text}</div>
+                </div>
+            `).join('');
+
+            panel.innerHTML = `
+                <div class="notification-header">
+                    <h4 style="color: #fff;">Notifications (${unreadCount})</h4>
+                    <a href="#" style="font-size: 0.8rem; color: var(--gold-primary);" onclick="event.preventDefault(); markAllAsRead()">Mark all as read</a>
+                </div>
+                <div class="notification-list">${itemsHTML.length ? itemsHTML : '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No notifications.</p>'}</div>
+                <div class="notification-footer">
+                    <a href="#" style="font-size: 0.8rem; color: var(--text-muted);">View all notifications</a>
+                </div>
+            `;
+        }
+
+        async function markAllAsRead() {
+            state.notifications.forEach(n => n.read = true);
+            renderNotifications();
+            await saveState();
+            updateNotificationBadge();
+            showToast("All notifications marked as read.", "info");
+        }
+
+        // --- UTILS ---
+
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            let icon = 'fa-info-circle';
+            let color = 'var(--gold-primary)';
+            
+            if (type === 'success') { icon = 'fa-check-circle'; color = '#4caf50'; }
+            if (type === 'error') { icon = 'fa-exclamation-circle'; color = '#ef5350'; }
+
+            toast.style.borderLeftColor = color;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <i class="fa-solid ${icon}" style="color: ${color};"></i>
+            `;
+            container.appendChild(toast);
+            // Remove after specified duration
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+        async function handleNotificationClick(id) {
+            const notification = state.notifications.find(n => n.id === id);
+            if (notification) {
+                notification.read = true;
+                
+                if (notification.link) {
+                    const navItem = document.getElementById(`nav-item-${notification.link}`);
+                    if (navItem) {
+                        switchTab(notification.link, navItem);
+                    }
+                }
+                await saveState();
+                toggleNotifications(); // Close panel after click
+                updateNotificationBadge();
+            }
+        }
+        // --- AI WIDGET LOGIC ---
+        function toggleAiChat() {
+            const chatWindow = document.getElementById('ai-chat-window');
+            chatWindow.classList.toggle('hidden');
+        }
+        function handleAiInput(event) {
+            if (event.key === 'Enter') sendAiMessage();
+        }
+        function sendAiMessage() {
+            const input = document.getElementById('ai-user-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+            // Add User Message
+            addAiMessage(msg, 'user');
+            input.value = '';
+            // Simulate AI Response
+            setTimeout(() => {
+                const response = getAiResponse(msg);
+                addAiMessage(response, 'bot');
+            }, 1000);
+        }
+        function addAiMessage(text, sender) {
+            const container = document.getElementById('ai-messages');
+            const div = document.createElement('div');
+            div.className = sender === 'user' ? 'ai-msg-user' : 'ai-msg-bot';
+            div.innerText = text;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+        function getAiResponse(msg) {
+            msg = msg.toLowerCase();
+            if (msg.includes('hello') || msg.includes('hi')) return "Hello! How can I help you with your career journey today?";
+            if (msg.includes('job') || msg.includes('opening')) return "You can view available jobs in the 'Available Jobs' section of your dashboard.";
+            if (msg.includes('resume') || msg.includes('cv')) return "Need help with your resume? Check out the Interview Prep Hub for guides and templates.";
+            if (msg.includes('interview')) return "You can schedule or practice interviews in the Interview Prep Hub.";
+            if (msg.includes('status')) return "You can check your application status in 'My Applications'.";
+            return "I'm here to help! You can ask me about jobs, interviews, or your profile.";
+        }
+    </script>
+</body>
+</html>

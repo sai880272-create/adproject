@@ -1,0 +1,3 @@
+@echo off
+echo Starting Job Match Student Portal (Java Desktop GUI Application)...
+java -cp bin_java com.jobmatch.student.Main
